@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { requestNotificationPermission } from '@/lib/firebase';
 
 export default function PushNotificationSetup() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
@@ -11,7 +12,7 @@ export default function PushNotificationSetup() {
 
   useEffect(() => {
     // Проверяем поддержку уведомлений
-    if ('Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window) {
+    if ('Notification' in window) {
       setIsSupported(true);
       setPermission(Notification.permission);
     }
@@ -31,66 +32,28 @@ export default function PushNotificationSetup() {
 
   const requestPermission = async () => {
     try {
-      const permission = await Notification.requestPermission();
-      setPermission(permission);
-
-      if (permission === 'granted') {
-        await subscribeToPush();
+      const fcmToken = await requestNotificationPermission();
+      
+      if (fcmToken) {
+        setPermission('granted');
+        
+        // Отправляем FCM токен на сервер
+        const token = localStorage.getItem('token');
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ fcmToken }),
+        });
+        
+        console.log('✅ FCM token saved');
+        alert('✅ Уведомления успешно включены!');
       }
     } catch (error) {
       console.error('Error requesting notification permission:', error);
-    }
-  };
-
-  const subscribeToPush = async () => {
-    try {
-      console.log('🔔 Starting push subscription...');
-      
-      // Регистрируем service worker
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      console.log('✅ Service worker registered');
-      
-      await navigator.serviceWorker.ready;
-      console.log('✅ Service worker ready');
-
-      // Получаем VAPID ключ
-      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
-      if (!vapidPublicKey) {
-        console.error('❌ VAPID public key not found');
-        return;
-      }
-      console.log('✅ VAPID key found');
-
-      // Подписываемся на push-уведомления
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
-      });
-      console.log('✅ Push subscription created:', subscription.endpoint.substring(0, 50) + '...');
-
-      // Отправляем подписку на сервер
-      const token = localStorage.getItem('token');
-      const response = await fetch('/api/push/subscribe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(subscription),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        console.error('❌ Failed to save subscription:', error);
-        return;
-      }
-
-      console.log('✅ Push subscription saved to server');
-      alert('✅ Уведомления успешно включены!');
-    } catch (error) {
-      console.error('❌ Error subscribing to push:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      alert('❌ Ошибка при включении уведомлений: ' + errorMessage);
+      alert('❌ Ошибка при включении уведомлений');
     }
   };
 
@@ -110,8 +73,8 @@ export default function PushNotificationSetup() {
               На iOS push-уведомления работают только в установленных PWA приложениях.
             </p>
             <ol className="text-xs text-amber-700 space-y-1 list-decimal list-inside">
-              <li>Нажмите кнопку "Поделиться" в Safari</li>
-              <li>Выберите "На экран «Домой»"</li>
+              <li>Нажмите кнопку &quot;Поделиться&quot; в Safari</li>
+              <li>Выберите &quot;На экран «Домой»&quot;</li>
               <li>Запустите приложение через иконку</li>
               <li>Разрешите уведомления</li>
             </ol>
@@ -171,19 +134,4 @@ export default function PushNotificationSetup() {
       </div>
     </div>
   );
-}
-
-function urlBase64ToUint8Array(base64String: string) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/\-/g, '+')
-    .replace(/_/g, '/');
-
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
 }
