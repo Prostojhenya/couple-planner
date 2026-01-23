@@ -20,14 +20,17 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ User authenticated:', payload.userId);
 
-    const subscription = await request.json();
-    console.log('📝 Subscription data received:', subscription.endpoint?.substring(0, 50) + '...');
+    const body = await request.json();
+    
+    // Поддержка как старого формата (VAPID), так и нового (FCM)
+    const fcmToken = body.fcmToken || JSON.stringify(body);
+    console.log('📝 Subscription data received');
 
     // Сохраняем подписку в базе данных
     await prisma.user.update({
       where: { id: payload.userId },
       data: {
-        pushSubscription: JSON.stringify(subscription),
+        pushSubscription: fcmToken,
       },
     });
 
