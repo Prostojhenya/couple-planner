@@ -8,6 +8,10 @@ const nextConfig = {
     // Игнорируем ошибки TypeScript во время build (только warnings)
     ignoreBuildErrors: false,
   },
+  // Отключаем статическую оптимизацию для динамических страниц
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
+  },
 };
 
 export default nextConfig;
