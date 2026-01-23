@@ -1,42 +1,72 @@
 // OneSignal configuration
 export const ONESIGNAL_APP_ID = 'cb22405e-14fd-45fb-82b3-f68180e0fbe6';
 
+declare global {
+  interface Window {
+    OneSignalDeferred?: any[];
+    OneSignal?: any;
+  }
+}
+
 export async function initOneSignal() {
   if (typeof window === 'undefined') return;
   
+  console.log('🔄 Initializing OneSignal...');
+  
   try {
-    // @ts-ignore
-    await window.OneSignalDeferred?.push(async function(OneSignal: any) {
+    // Wait for OneSignal SDK to load
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    
+    window.OneSignalDeferred.push(async function(OneSignal: any) {
+      console.log('📦 OneSignal SDK loaded');
+      
       await OneSignal.init({
         appId: ONESIGNAL_APP_ID,
-        safari_web_id: 'web.onesignal.auto.xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+        allowLocalhostAsSecureOrigin: true,
         notifyButton: {
           enable: false,
         },
-        allowLocalhostAsSecureOrigin: true,
       });
+      
+      console.log('✅ OneSignal initialized successfully');
     });
-    
-    console.log('✅ OneSignal initialized');
   } catch (error) {
     console.error('❌ OneSignal initialization error:', error);
   }
 }
 
-export async function subscribeToOneSignal() {
+export async function subscribeToOneSignal(): Promise<string | null> {
   try {
-    // @ts-ignore
-    const OneSignal = window.OneSignal;
-    if (!OneSignal) {
-      throw new Error('OneSignal not loaded');
+    console.log('🔔 Starting OneSignal subscription...');
+    
+    // Wait for OneSignal to be ready
+    if (!window.OneSignal) {
+      console.log('⏳ Waiting for OneSignal SDK...');
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
-    // Request permission
-    await OneSignal.Slidedown.promptPush();
+    const OneSignal = window.OneSignal;
+    if (!OneSignal) {
+      throw new Error('OneSignal SDK not loaded');
+    }
     
-    // Get subscription ID
-    const userId = await OneSignal.User.PushSubscription.id;
+    console.log('📱 Requesting notification permission...');
+    
+    // Request permission using Notifications API
+    const permission = await OneSignal.Notifications.requestPermission();
+    console.log('Permission result:', permission);
+    
+    if (!permission) {
+      throw new Error('Permission denied');
+    }
+    
+    // Get OneSignal User ID
+    const userId = OneSignal.User.PushSubscription.id;
     console.log('✅ OneSignal User ID:', userId);
+    
+    if (!userId) {
+      throw new Error('Failed to get OneSignal User ID');
+    }
     
     return userId;
   } catch (error) {
@@ -45,12 +75,12 @@ export async function subscribeToOneSignal() {
   }
 }
 
-export async function sendOneSignalNotification(userIds: string[], notification: {
-  title: string;
-  body: string;
-  url?: string;
-}) {
-  // This will be called from server-side
-  // OneSignal REST API will be used
-  return { userIds, notification };
+export async function getOneSignalUserId(): Promise<string | null> {
+  try {
+    if (!window.OneSignal) return null;
+    return window.OneSignal.User.PushSubscription.id || null;
+  } catch (error) {
+    console.error('Error getting OneSignal User ID:', error);
+    return null;
+  }
 }
