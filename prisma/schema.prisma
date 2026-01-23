@@ -1,0 +1,236 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id               String   @id @default(cuid())
+  email            String   @unique
+  passwordHash     String
+  name             String?
+  pushSubscription String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  coupleMemberships CoupleMembers[]
+  createdTasks      Task[]          @relation("TaskOwner")
+  createdEvents     Event[]         @relation("EventCreator")
+  comments          Comment[]
+  notifications     Notification[]
+  sentInvites       Invite[]
+
+  @@map("users")
+}
+
+model CoupleSpace {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  members CoupleMembers[]
+  tasks   Task[]
+  events  Event[]
+  invites Invite[]
+
+  @@map("couple_spaces")
+}
+
+model CoupleMembers {
+  id       String @id @default(cuid())
+  coupleId String
+  userId   String
+  role     String @default("member")
+
+  couple CoupleSpace @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([coupleId, userId])
+  @@map("couple_members")
+}
+
+model Invite {
+  id           String   @id @default(cuid())
+  coupleId     String
+  token        String   @unique
+  invitedEmail String
+  status       String   @default("pending")
+  expiresAt    DateTime
+  createdById  String
+  createdAt    DateTime @default(now())
+
+  couple    CoupleSpace @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  createdBy User        @relation(fields: [createdById], references: [id])
+
+  @@map("invites")
+}
+
+model Task {
+  id              String    @id @default(cuid())
+  coupleId        String
+  ownerId         String
+  title           String
+  description     String?
+  isShared        Boolean   @default(false)
+  assigneeType    String    @default("me")
+  status          String    @default("new")
+  priority        String    @default("medium")
+  dueAt           DateTime?
+  requiresApproval Boolean  @default(false)
+  approvalStatus  String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  couple   CoupleSpace @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  owner    User        @relation("TaskOwner", fields: [ownerId], references: [id])
+  comments Comment[]
+
+  @@map("tasks")
+}
+
+model Event {
+  id              String    @id @default(cuid())
+  coupleId        String
+  createdById     String
+  title           String
+  description     String?
+  startAt         DateTime
+  endAt           DateTime
+  allDay          Boolean   @default(false)
+  participants    String    @default("both")
+  location        String?
+  requiresApproval Boolean  @default(false)
+  approvalStatus  String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  couple    CoupleSpace @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  createdBy User        @relation("EventCreator", fields: [createdById], references: [id])
+  comments  Comment[]
+
+  @@map("events")
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  entityType String
+  entityId   String
+  authorId   String
+  text       String
+  createdAt  DateTime @default(now())
+
+  author User   @relation(fields: [authorId], references: [id])
+  task   Task?  @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  event  Event? @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@map("comments")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  payload   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model ShoppingList {
+  id        String   @id @default(cuid())
+  coupleId  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items ShoppingItem[]
+
+  @@map("shopping_lists")
+}
+
+model ShoppingItem {
+  id             String   @id @default(cuid())
+  shoppingListId String
+  name           String
+  quantity       String?
+  category       String?
+  isPurchased    Boolean  @default(false)
+  addedById      String
+  purchasedById  String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  shoppingList ShoppingList @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+
+  @@map("shopping_items")
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  coupleId    String
+  createdById String
+  title       String
+  content     String
+  category    String?
+  isPinned    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("notes")
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  coupleId    String
+  createdById String
+  title       String
+  amount      Float
+  category    String
+  date        DateTime
+  paidBy      String
+  splitType   String   @default("equal")
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("expenses")
+}
+
+model Budget {
+  id        String   @id @default(cuid())
+  coupleId  String   @unique
+  monthly   Float
+  categories String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("budgets")
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  title       String
+  description String
+  icon        String
+  unlockedAt  DateTime @default(now())
+
+  @@map("achievements")
+}
+
+model Streak {
+  id            String   @id @default(cuid())
+  coupleId      String   @unique
+  currentStreak Int      @default(0)
+  longestStreak Int      @default(0)
+  lastActiveAt  DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("streaks")
+}
