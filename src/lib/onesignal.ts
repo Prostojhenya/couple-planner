@@ -22,6 +22,7 @@ export async function initOneSignal() {
       
       await OneSignal.init({
         appId: ONESIGNAL_APP_ID,
+        safari_web_id: 'web.com.coupleplanner.push', // Замени на свой Website Push ID
         allowLocalhostAsSecureOrigin: true,
         notifyButton: {
           enable: false,

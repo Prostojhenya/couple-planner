@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { initOneSignal, subscribeToOneSignal } from '@/lib/onesignal';
+
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || 'BK59eg1svDbWdiG3MQKE9C4hlR3UyG6AWjoxpnkAFcnMI_PIJcs3J_86duNeDRFo9CVu3zaFHh5pyAlzhI6Mi9c';
 
 export default function PushNotificationSetup() {
   const [permission, setPermission] = useState<NotificationPermission>('default');
@@ -9,41 +10,80 @@ export default function PushNotificationSetup() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Initialize OneSignal
-    initOneSignal();
-    
-    // Check notification support
-    if ('Notification' in window) {
+    if ('Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window) {
       setIsSupported(true);
       setPermission(Notification.permission);
     }
   }, []);
 
+  const urlBase64ToUint8Array = (base64String: string) => {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+
   const requestPermission = async () => {
+    console.log('🔔 Requesting notification permission...');
     setIsLoading(true);
+    
     try {
-      const userId = await subscribeToOneSignal();
+      const permission = await Notification.requestPermission();
+      console.log('Permission result:', permission);
       
-      if (userId) {
-        setPermission('granted');
-        
-        // Save OneSignal User ID to our backend
-        const token = localStorage.getItem('token');
-        await fetch('/api/push/subscribe', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({ oneSignalUserId: userId }),
-        });
-        
-        console.log('✅ OneSignal subscription saved');
+      if (permission !== 'granted') {
+        console.log('❌ Permission denied');
+        alert('❌ Разрешение на уведомления отклонено');
+        setPermission(permission);
+        setIsLoading(false);
+        return;
+      }
+
+      setPermission('granted');
+
+      // Регистрируем Service Worker
+      console.log('📝 Registering service worker...');
+      const registration = await navigator.serviceWorker.register('/sw.js');
+      console.log('✅ Service worker registered');
+
+      // Ждём, пока Service Worker активируется
+      await navigator.serviceWorker.ready;
+      console.log('✅ Service worker ready');
+
+      // Подписываемся на push-уведомления
+      console.log('📱 Subscribing to push notifications...');
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+      });
+
+      console.log('✅ Push subscription created:', subscription.endpoint);
+
+      // Отправляем подписку на сервер
+      const token = localStorage.getItem('token');
+      const response = await fetch('/api/push/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(subscription.toJSON()),
+      });
+
+      if (response.ok) {
+        console.log('✅ Subscription saved to server');
         alert('✅ Уведомления успешно включены!');
+      } else {
+        console.error('❌ Failed to save subscription');
+        alert('❌ Ошибка при сохранении подписки');
       }
     } catch (error) {
-      console.error('❌ Error subscribing to OneSignal:', error);
-      alert('❌ Ошибка при включении уведомлений');
+      console.error('❌ Error setting up push notifications:', error);
+      alert('❌ Ошибка при настройке уведомлений');
     } finally {
       setIsLoading(false);
     }
