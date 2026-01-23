@@ -528,7 +528,7 @@ function DashboardContent() {
         </div>
 
         {/* Debug Push Status */}
-        <div className="mb-4">
+        <div className="mb-4 space-y-2">
           <button
             onClick={async () => {
               try {
@@ -546,6 +546,71 @@ function DashboardContent() {
             className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-semibold"
           >
             🔍 Проверить статус уведомлений
+          </button>
+          
+          <button
+            onClick={async () => {
+              try {
+                console.log('🔔 Requesting notification permission...');
+                const permission = await Notification.requestPermission();
+                console.log('Permission:', permission);
+                
+                if (permission !== 'granted') {
+                  alert('❌ Разрешение не дано');
+                  return;
+                }
+                
+                console.log('✅ Permission granted, subscribing...');
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                await navigator.serviceWorker.ready;
+                
+                const vapidKey = 'BK59eg1svDbWdiG3MQKE9C4hlR3UyG6AWjoxpnkAFcnMI_PIJcs3J_86duNeDRFo9CVu3zaFHh5pyAlzhI6Mi9c';
+                
+                function urlBase64ToUint8Array(base64String) {
+                  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+                  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+                  const rawData = window.atob(base64);
+                  const outputArray = new Uint8Array(rawData.length);
+                  for (let i = 0; i < rawData.length; ++i) {
+                    outputArray[i] = rawData.charCodeAt(i);
+                  }
+                  return outputArray;
+                }
+                
+                const subscription = await registration.pushManager.subscribe({
+                  userVisibleOnly: true,
+                  applicationServerKey: urlBase64ToUint8Array(vapidKey),
+                });
+                
+                console.log('✅ Subscription created:', subscription.endpoint.substring(0, 50));
+                
+                const token = localStorage.getItem('token');
+                const response = await fetch('/api/push/subscribe', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                  },
+                  body: JSON.stringify(subscription),
+                });
+                
+                if (!response.ok) {
+                  const error = await response.json();
+                  console.error('❌ Failed:', error);
+                  alert('❌ Ошибка: ' + JSON.stringify(error));
+                  return;
+                }
+                
+                console.log('✅ Saved to server');
+                alert('✅ Уведомления успешно включены!');
+              } catch (error) {
+                console.error('❌ Error:', error);
+                alert('❌ Ошибка: ' + error.message);
+              }
+            }}
+            className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm font-semibold"
+          >
+            🔔 Включить уведомления (принудительно)
           </button>
         </div>
 
