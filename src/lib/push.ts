@@ -1,6 +1,7 @@
 import webpush from 'web-push';
 import { prisma } from './prisma';
 import { sendFCMNotification } from './firebase-admin';
+import { sendOneSignalNotification } from './onesignal-server';
 
 // Настройка VAPID ключей (для fallback)
 const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -43,6 +44,24 @@ export async function sendPushNotification(
     }
 
     const subscription = user.pushSubscription;
+
+    // Check if it's OneSignal User ID (UUID format)
+    if (subscription.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+      // OneSignal subscription
+      const success = await sendOneSignalNotification(
+        [subscription],
+        {
+          title: payload.title,
+          body: payload.body,
+          url: payload.data?.url || '/',
+        }
+      );
+      
+      if (success) {
+        console.log(`✅ OneSignal push notification sent to user ${userId}`);
+      }
+      return success;
+    }
 
     // Проверяем формат подписки - FCM токен или VAPID subscription
     if (subscription.startsWith('{')) {

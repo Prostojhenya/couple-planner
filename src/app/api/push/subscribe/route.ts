@@ -22,21 +22,26 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     
-    // Поддержка как старого формата (fcmToken), так и нового (прямая подписка)
+    // Поддержка разных форматов подписок
     let subscription: string;
     
-    if (body.fcmToken) {
-      // Старый формат с FCM токеном
+    if (body.oneSignalUserId) {
+      // OneSignal User ID
+      subscription = body.oneSignalUserId;
+      console.log('📝 OneSignal User ID received');
+    } else if (body.fcmToken) {
+      // FCM токен
       subscription = body.fcmToken;
+      console.log('📝 FCM token received');
     } else if (body.endpoint) {
-      // Новый формат - прямая подписка
+      // VAPID подписка
       subscription = JSON.stringify(body);
+      console.log('📝 VAPID subscription received');
     } else {
-      // Fallback - весь body как строка
+      // Fallback
       subscription = typeof body === 'string' ? body : JSON.stringify(body);
+      console.log('📝 Subscription data received');
     }
-    
-    console.log('📝 Subscription data received, endpoint:', body.endpoint || 'FCM token');
 
     // Сохраняем подписку в базе данных
     await prisma.user.update({
