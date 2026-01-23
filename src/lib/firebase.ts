@@ -19,7 +19,8 @@ export async function requestNotificationPermission() {
   try {
     const supported = await isSupported();
     if (!supported) {
-      console.log('Firebase Messaging is not supported in this browser');
+      console.log('⚠️ Firebase Messaging is not supported in this browser (likely iOS Safari)');
+      console.log('iOS Safari requires APNs certificates configured in Firebase Console');
       return null;
     }
 
@@ -31,13 +32,13 @@ export async function requestNotificationPermission() {
         vapidKey: 'BI6VJrDsanI4tc6IQ2S71mzeuhBtMNMTchfncwAaoK923WHsE0zEMOWEpxW-298r6qOpIVjbvNBiPZeHYQ4ir9o'
       });
       
-      console.log('FCM Token:', token);
+      console.log('✅ FCM Token:', token);
       return token;
     }
     
     return null;
   } catch (error) {
-    console.error('Error getting FCM token:', error);
+    console.error('❌ Error getting FCM token:', error);
     return null;
   }
 }
