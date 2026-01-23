@@ -527,6 +527,28 @@ function DashboardContent() {
           <PushNotificationSetup />
         </div>
 
+        {/* Debug Push Status */}
+        <div className="mb-4">
+          <button
+            onClick={async () => {
+              try {
+                const token = localStorage.getItem('token');
+                const res = await fetch('/api/debug/push-status', {
+                  headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                alert(JSON.stringify(data, null, 2));
+                console.log('Push Status:', data);
+              } catch (error) {
+                console.error('Error:', error);
+              }
+            }}
+            className="w-full py-2 px-4 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm font-semibold"
+          >
+            🔍 Проверить статус уведомлений
+          </button>
+        </div>
+
         {activeScreen === 'home' && (
           <div>
             {/* Quick Filters */}
