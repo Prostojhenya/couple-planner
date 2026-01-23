@@ -605,7 +605,8 @@ function DashboardContent() {
                 alert('✅ Уведомления успешно включены!');
               } catch (error) {
                 console.error('❌ Error:', error);
-                alert('❌ Ошибка: ' + error.message);
+                const errorMessage = error instanceof Error ? error.message : String(error);
+                alert('❌ Ошибка: ' + errorMessage);
               }
             }}
             className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition text-sm font-semibold"
