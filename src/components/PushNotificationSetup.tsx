@@ -89,7 +89,8 @@ export default function PushNotificationSetup() {
       alert('✅ Уведомления успешно включены!');
     } catch (error) {
       console.error('❌ Error subscribing to push:', error);
-      alert('❌ Ошибка при включении уведомлений: ' + error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert('❌ Ошибка при включении уведомлений: ' + errorMessage);
     }
   };
 
