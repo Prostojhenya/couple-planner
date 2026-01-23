@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import TaskCard from '@/components/TaskCard';
@@ -9,7 +9,10 @@ import TaskForm from '@/components/TaskForm';
 import EventForm from '@/components/EventForm';
 import PushNotificationSetup from '@/components/PushNotificationSetup';
 
-export default function DashboardPage() {
+// Отключаем статическую генерацию для этой страницы
+export const dynamic = 'force-dynamic';
+
+function DashboardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [tasks, setTasks] = useState([]);
@@ -1104,5 +1107,14 @@ export default function DashboardPage() {
         </div>
       )}
     </div>
+  );
+}
+
+
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><div className="text-lg">Загрузка...</div></div>}>
+      <DashboardContent />
+    </Suspense>
   );
 }
