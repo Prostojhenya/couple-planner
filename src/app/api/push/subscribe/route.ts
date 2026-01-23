@@ -22,15 +22,27 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     
-    // Поддержка как старого формата (VAPID), так и нового (FCM)
-    const fcmToken = body.fcmToken || JSON.stringify(body);
-    console.log('📝 Subscription data received');
+    // Поддержка как старого формата (fcmToken), так и нового (прямая подписка)
+    let subscription: string;
+    
+    if (body.fcmToken) {
+      // Старый формат с FCM токеном
+      subscription = body.fcmToken;
+    } else if (body.endpoint) {
+      // Новый формат - прямая подписка
+      subscription = JSON.stringify(body);
+    } else {
+      // Fallback - весь body как строка
+      subscription = typeof body === 'string' ? body : JSON.stringify(body);
+    }
+    
+    console.log('📝 Subscription data received, endpoint:', body.endpoint || 'FCM token');
 
     // Сохраняем подписку в базе данных
     await prisma.user.update({
       where: { id: payload.userId },
       data: {
-        pushSubscription: fcmToken,
+        pushSubscription: subscription,
       },
     });
 

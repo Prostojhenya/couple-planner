@@ -32,27 +32,33 @@ export default function PushNotificationSetup() {
 
   const requestPermission = async () => {
     try {
-      const fcmToken = await requestNotificationPermission();
+      const subscription = await requestNotificationPermission();
       
-      if (fcmToken) {
+      if (subscription) {
         setPermission('granted');
         
-        // Отправляем FCM токен на сервер
+        // Отправляем подписку на сервер
         const token = localStorage.getItem('token');
-        await fetch('/api/push/subscribe', {
+        const response = await fetch('/api/push/subscribe', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
           },
-          body: JSON.stringify({ fcmToken }),
+          body: subscription, // Уже JSON строка
         });
         
-        console.log('✅ FCM token saved');
-        alert('✅ Уведомления успешно включены!');
+        if (response.ok) {
+          console.log('✅ Push subscription saved');
+          alert('✅ Уведомления успешно включены!');
+        } else {
+          throw new Error('Failed to save subscription');
+        }
+      } else {
+        alert('❌ Не удалось получить разрешение на уведомления');
       }
     } catch (error) {
-      console.error('Error requesting notification permission:', error);
+      console.error('❌ Error requesting notification permission:', error);
       alert('❌ Ошибка при включении уведомлений');
     }
   };
