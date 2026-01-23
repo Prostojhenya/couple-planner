@@ -44,26 +44,33 @@ export default function PushNotificationSetup() {
 
   const subscribeToPush = async () => {
     try {
+      console.log('🔔 Starting push subscription...');
+      
       // Регистрируем service worker
       const registration = await navigator.serviceWorker.register('/sw.js');
+      console.log('✅ Service worker registered');
+      
       await navigator.serviceWorker.ready;
+      console.log('✅ Service worker ready');
 
       // Получаем VAPID ключ
       const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
       if (!vapidPublicKey) {
-        console.error('VAPID public key not found');
+        console.error('❌ VAPID public key not found');
         return;
       }
+      console.log('✅ VAPID key found');
 
       // Подписываемся на push-уведомления
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
       });
+      console.log('✅ Push subscription created:', subscription.endpoint.substring(0, 50) + '...');
 
       // Отправляем подписку на сервер
       const token = localStorage.getItem('token');
-      await fetch('/api/push/subscribe', {
+      const response = await fetch('/api/push/subscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -72,9 +79,17 @@ export default function PushNotificationSetup() {
         body: JSON.stringify(subscription),
       });
 
-      console.log('✅ Push subscription successful');
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('❌ Failed to save subscription:', error);
+        return;
+      }
+
+      console.log('✅ Push subscription saved to server');
+      alert('✅ Уведомления успешно включены!');
     } catch (error) {
-      console.error('Error subscribing to push:', error);
+      console.error('❌ Error subscribing to push:', error);
+      alert('❌ Ошибка при включении уведомлений: ' + error.message);
     }
   };
 
