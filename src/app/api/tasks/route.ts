@@ -114,7 +114,8 @@ export async function POST(req: NextRequest) {
 
     // Отправляем push-уведомление партнёру
     if (data.assigneeType === 'partner' || data.assigneeType === 'both') {
-      await sendPushToCouple(
+      console.log('🔔 Sending push notification for task:', task.id, 'assigneeType:', data.assigneeType);
+      const sentCount = await sendPushToCouple(
         membership.coupleId,
         payload.userId,
         {
@@ -129,6 +130,9 @@ export async function POST(req: NextRequest) {
           },
         }
       );
+      console.log('✅ Push notifications sent:', sentCount);
+    } else {
+      console.log('⏭️  No push notification sent - assigneeType:', data.assigneeType);
     }
 
     return NextResponse.json(task);
