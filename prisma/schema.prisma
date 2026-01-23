@@ -122,8 +122,8 @@ model Comment {
   createdAt  DateTime @default(now())
 
   author User   @relation(fields: [authorId], references: [id])
-  task   Task?  @relation(fields: [entityId], references: [id], onDelete: Cascade)
-  event  Event? @relation(fields: [entityId], references: [id], onDelete: Cascade)
+  task   Task?  @relation(fields: [entityId], references: [id], onDelete: Cascade, map: "comment_task_fk")
+  event  Event? @relation(fields: [entityId], references: [id], onDelete: Cascade, map: "comment_event_fk")
 
   @@map("comments")
 }
