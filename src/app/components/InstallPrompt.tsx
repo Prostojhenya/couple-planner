@@ -33,7 +33,7 @@ export default function InstallPrompt() {
             <br />
             1. Нажмите <span className="font-bold">⬆️ Поделиться</span>
             <br />
-            2. Выберите <span className="font-bold">"На экран «Домой»"</span>
+            2. Выберите <span className="font-bold">&quot;На экран «Домой»&quot;</span>
           </div>
         </div>
         <button
