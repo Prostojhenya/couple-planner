@@ -566,7 +566,7 @@ function DashboardContent() {
                 
                 const vapidKey = 'BK59eg1svDbWdiG3MQKE9C4hlR3UyG6AWjoxpnkAFcnMI_PIJcs3J_86duNeDRFo9CVu3zaFHh5pyAlzhI6Mi9c';
                 
-                function urlBase64ToUint8Array(base64String) {
+                function urlBase64ToUint8Array(base64String: string) {
                   const padding = '='.repeat((4 - base64String.length % 4) % 4);
                   const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
                   const rawData = window.atob(base64);
