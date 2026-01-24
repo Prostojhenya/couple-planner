@@ -34,23 +34,41 @@ export default function TaskCard({ task, onComplete }: TaskCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 border border-gray-100">
+    <div className={`bg-white rounded-xl shadow-md hover:shadow-lg transition-all p-5 border ${
+      task.status === 'completed' 
+        ? 'bg-green-50 border-green-200' 
+        : 'border-gray-100'
+    }`}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <h3 className="font-semibold text-gray-900 text-lg">{task.title}</h3>
+          <h3 className={`font-semibold text-lg ${
+            task.status === 'completed' ? 'text-green-700 line-through' : 'text-gray-900'
+          }`}>{task.title}</h3>
           {task.description && (
-            <p className="text-sm text-gray-600 mt-2">{task.description}</p>
+            <p className={`text-sm mt-2 ${
+              task.status === 'completed' ? 'text-green-600' : 'text-gray-600'
+            }`}>{task.description}</p>
           )}
         </div>
         {task.status !== 'completed' && (
           <button
-            onClick={() => onComplete(task.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onComplete(task.id);
+            }}
             className="ml-3 text-gray-400 hover:text-green-600 transition"
           >
             <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </button>
+        )}
+        {task.status === 'completed' && (
+          <div className="ml-3 text-green-600">
+            <svg className="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
         )}
       </div>
 
