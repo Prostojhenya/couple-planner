@@ -13,6 +13,13 @@ export default function TasksPage() {
 
   useEffect(() => {
     loadTasks();
+    
+    // Автоматическое обновление каждые 5 секунд
+    const interval = setInterval(() => {
+      loadTasks();
+    }, 5000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const loadTasks = async () => {

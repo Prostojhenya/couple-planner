@@ -24,6 +24,13 @@ export default function ShoppingPage() {
       return;
     }
     loadLists();
+    
+    // Автоматическое обновление каждые 5 секунд
+    const interval = setInterval(() => {
+      loadLists();
+    }, 5000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const loadLists = async () => {

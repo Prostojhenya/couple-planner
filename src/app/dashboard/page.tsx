@@ -52,6 +52,14 @@ function DashboardContent() {
     
     loadData();
     loadCouple();
+    
+    // Автоматическое обновление каждые 5 секунд
+    const interval = setInterval(() => {
+      loadData();
+      loadCouple();
+    }, 5000);
+    
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
