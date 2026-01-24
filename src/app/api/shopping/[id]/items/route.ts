@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
+import { sendPushToCouple } from '@/lib/push';
 import { z } from 'zod';
 
 const shoppingItemSchema = z.object({
@@ -27,6 +28,25 @@ export async function POST(
     const body = await req.json();
     const data = shoppingItemSchema.parse(body);
 
+    // Получаем информацию о списке покупок
+    const shoppingList = await prisma.shoppingList.findUnique({
+      where: { id: params.id },
+      select: {
+        name: true,
+        coupleId: true,
+      },
+    });
+
+    if (!shoppingList) {
+      return NextResponse.json({ error: 'Список не найден' }, { status: 404 });
+    }
+
+    // Получаем информацию о пользователе
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { name: true, email: true },
+    });
+
     const item = await prisma.shoppingItem.create({
       data: {
         ...data,
@@ -34,6 +54,25 @@ export async function POST(
         addedById: payload.userId,
       },
     });
+
+    // Отправляем уведомление партнёру
+    console.log('🔔 Sending notification for new shopping item:', item.id);
+    await sendPushToCouple(
+      shoppingList.coupleId,
+      payload.userId,
+      {
+        title: '🛍️ Добавлен товар',
+        body: `${user?.name || 'Партнёр'} добавил в "${shoppingList.name}": ${item.name}${item.quantity ? ` (${item.quantity})` : ''}`,
+        icon: '/icon-512.png',
+        badge: '/icon-512.png',
+        tag: `shopping-item-${item.id}`,
+        data: {
+          url: '/shopping',
+          listId: params.id,
+          itemId: item.id,
+        },
+      }
+    );
 
     return NextResponse.json(item);
   } catch (error) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyToken } from '@/lib/auth';
+import { sendPushToCouple } from '@/lib/push';
 import { z } from 'zod';
 
 const shoppingListSchema = z.object({
@@ -74,6 +75,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const data = shoppingListSchema.parse(body);
 
+    // Получаем информацию о пользователе
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { name: true, email: true },
+    });
+
     const list = await prisma.shoppingList.create({
       data: {
         ...data,
@@ -83,6 +90,24 @@ export async function POST(req: NextRequest) {
         items: true,
       },
     });
+
+    // Отправляем уведомление партнёру
+    console.log('🔔 Sending notification for new shopping list:', list.id);
+    await sendPushToCouple(
+      membership.coupleId,
+      payload.userId,
+      {
+        title: '🛒 Новый список покупок',
+        body: `${user?.name || 'Партнёр'} создал список: ${list.name}`,
+        icon: '/icon-512.png',
+        badge: '/icon-512.png',
+        tag: `shopping-list-${list.id}`,
+        data: {
+          url: '/shopping',
+          listId: list.id,
+        },
+      }
+    );
 
     return NextResponse.json(list);
   } catch (error) {
