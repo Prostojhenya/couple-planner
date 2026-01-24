@@ -43,6 +43,7 @@ export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) 
 
   const handleTouchStart = (e: TouchEvent) => {
     startX.current = e.touches[0].clientX;
+    currentX.current = startX.current;
     setIsSwiping(true);
   };
 
@@ -51,26 +52,30 @@ export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) 
     currentX.current = e.touches[0].clientX;
     const diff = currentX.current - startX.current;
     
-    // Свайп влево для открытия, вправо для закрытия
     if (isOpen) {
-      // Если уже открыто, можно свайпнуть вправо чтобы закрыть
+      // Если открыто, можно свайпнуть вправо чтобы закрыть
       if (diff > 0) {
         setTranslateX(Math.min(diff - 80, 0));
+      } else {
+        setTranslateX(-80);
       }
     } else {
       // Если закрыто, свайп влево чтобы открыть
       if (diff < 0) {
         setTranslateX(Math.max(diff, -80));
+      } else {
+        setTranslateX(0);
       }
     }
   };
 
   const handleTouchEnd = () => {
     setIsSwiping(false);
+    const diff = currentX.current - startX.current;
     
     if (isOpen) {
-      // Если открыто и свайпнули вправо больше чем на 40px - закрываем
-      if (translateX > -40) {
+      // Если открыто и свайпнули вправо больше чем на 30px - закрываем
+      if (diff > 30) {
         setTranslateX(0);
         setIsOpen(false);
       } else {
@@ -78,8 +83,8 @@ export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) 
         setTranslateX(-80);
       }
     } else {
-      // Если закрыто и свайпнули влево больше чем на 40px - открываем
-      if (translateX < -40) {
+      // Если закрыто и свайпнули влево больше чем на 30px - открываем
+      if (diff < -30) {
         setTranslateX(-80);
         setIsOpen(true);
       } else {

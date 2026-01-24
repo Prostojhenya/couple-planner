@@ -42,12 +42,23 @@ export async function GET(req: NextRequest) {
 
     console.log('✅ Couple ID:', membership.coupleId);
 
+    // Получаем ID партнёра
+    const partnerMembership = await prisma.coupleMembers.findFirst({
+      where: {
+        coupleId: membership.coupleId,
+        userId: { not: payload.userId },
+      },
+      select: { userId: true },
+    });
+
     const tasks = await prisma.task.findMany({
       where: {
         coupleId: membership.coupleId,
         OR: [
-          { isShared: true },
-          { ownerId: payload.userId },
+          { isShared: true }, // Общие задачи
+          { ownerId: payload.userId }, // Мои задачи
+          { assigneeType: 'partner', ownerId: partnerMembership?.userId }, // Задачи, которые партнёр создал для меня
+          { assigneeType: 'both' }, // Задачи для обоих
         ],
       },
       include: {
