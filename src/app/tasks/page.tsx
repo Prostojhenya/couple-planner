@@ -73,6 +73,22 @@ export default function TasksPage() {
     }
   };
 
+  const handleDeleteTask = async (taskId: string) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`/api/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        loadTasks();
+      }
+    } catch (err) {
+      console.error('Ошибка удаления задачи', err);
+    }
+  };
+
   const filteredTasks = tasks.filter((task: any) => {
     if (filter === 'all') return true;
     if (filter === 'active') return task.status !== 'completed';
@@ -153,6 +169,7 @@ export default function TasksPage() {
                 key={task.id}
                 task={task}
                 onComplete={handleCompleteTask}
+                onDelete={handleDeleteTask}
               />
             ))
           )}
