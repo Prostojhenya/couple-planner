@@ -94,15 +94,12 @@ export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) 
     }
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
+  const handleDelete = (e: React.MouseEvent | React.TouchEvent) => {
     e.stopPropagation();
     e.preventDefault();
+    console.log('🗑️ Delete button clicked, task:', task.id);
     if (onDelete) {
-      // Анимация удаления
-      setTranslateX(-500);
-      setTimeout(() => {
-        onDelete(task.id);
-      }, 300);
+      onDelete(task.id);
     }
   };
 
@@ -112,10 +109,16 @@ export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) 
       <div className="absolute inset-0 bg-red-500 flex items-center justify-end rounded-xl">
         <button
           onClick={handleDelete}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+          }}
           onTouchEnd={(e) => {
             e.stopPropagation();
             e.preventDefault();
-            handleDelete(e as any);
+            console.log('🗑️ Touch end on delete button');
+            if (onDelete) {
+              onDelete(task.id);
+            }
           }}
           className="w-24 h-full flex items-center justify-center text-white active:bg-red-600"
           aria-label="Удалить задачу"
