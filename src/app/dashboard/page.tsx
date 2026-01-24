@@ -392,10 +392,12 @@ function DashboardContent() {
               <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl border-2 border-white/40 shadow-lg">
                 💑
               </div>
-              <div>
-                <div className="text-sm opacity-90 font-medium">Привет!</div>
-                <div className="font-bold text-xl">{user?.name || user?.email?.split('@')[0]}</div>
-              </div>
+              {activeScreen !== 'settings' && (
+                <div>
+                  <div className="text-sm opacity-90 font-medium">Привет!</div>
+                  <div className="font-bold text-xl">{user?.name || user?.email?.split('@')[0]}</div>
+                </div>
+              )}
             </div>
             <div className="flex gap-2 items-center relative">
               {loading && (
@@ -432,12 +434,16 @@ function DashboardContent() {
             </div>
           </div>
           
-          <h1 className="text-2xl font-bold mb-2">Планер для двоих</h1>
-          <p className="text-sm text-white/90 mb-6">
-            {couple?.members?.length === 2 ? 
-              `Вы и ${couple.members.find((m: any) => m.user.id !== user?.id)?.user.name || 'партнёр'}` : 
-              'Пригласите партнёра'}
-          </p>
+          {activeScreen !== 'settings' && (
+            <>
+              <h1 className="text-2xl font-bold mb-2">TwoDo</h1>
+              <p className="text-sm text-white/90 mb-6">
+                {couple?.members?.length === 2 ? 
+                  `Вы и ${couple.members.find((m: any) => m.user.id !== user?.id)?.user.name || 'партнёр'}` : 
+                  'Пригласите партнёра'}
+              </p>
+            </>
+          )}
 
           {/* Progress Bar */}
           {activeScreen === 'home' && stats.total > 0 && (
@@ -482,16 +488,17 @@ function DashboardContent() {
 
 
       {/* Quick Add Button */}
-      <div className="px-4 -mt-6 mb-6 relative z-10">
-        <div className="flex gap-2">
-          <button
-            onClick={() => activeScreen === 'home' ? setShowTaskForm(true) : setShowEventForm(true)}
-            className="flex-1 bg-gradient-to-r from-primary-600 to-secondary-600 text-white py-4 rounded-2xl font-bold text-lg shadow-2xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2 hover:shadow-3xl"
-          >
-            <span className="text-2xl">+</span>
-            {activeScreen === 'home' ? 'Добавить задачу' : 'Добавить событие'}
-          </button>
-        </div>
+      {activeScreen !== 'settings' && (
+        <div className="px-4 -mt-6 mb-6 relative z-10">
+          <div className="flex gap-2">
+            <button
+              onClick={() => activeScreen === 'home' ? setShowTaskForm(true) : setShowEventForm(true)}
+              className="flex-1 bg-gradient-to-r from-primary-600 to-secondary-600 text-white py-4 rounded-2xl font-bold text-lg shadow-2xl active:scale-[0.98] transition-transform flex items-center justify-center gap-2 hover:shadow-3xl"
+            >
+              <span className="text-2xl">+</span>
+              {activeScreen === 'home' ? 'Добавить задачу' : 'Добавить событие'}
+            </button>
+          </div>
         
         {/* Quick Priority Buttons */}
         {activeScreen === 'home' && (
@@ -526,7 +533,8 @@ function DashboardContent() {
             </button>
           </div>
         )}
-      </div>
+        </div>
+      )}
 
       {/* Content */}
       <div className="px-4">
