@@ -34,20 +34,16 @@ export default function TaskCard({ task, onComplete }: TaskCardProps) {
   };
 
   return (
-    <div className={`bg-white rounded-xl shadow-md hover:shadow-lg transition-all p-5 border ${
+    <div className={`rounded-xl shadow-md hover:shadow-lg transition-all p-5 border ${
       task.status === 'completed' 
         ? 'bg-green-50 border-green-200' 
-        : 'border-gray-100'
+        : 'bg-white border-gray-100'
     }`}>
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
-          <h3 className={`font-semibold text-lg ${
-            task.status === 'completed' ? 'text-green-700 line-through' : 'text-gray-900'
-          }`}>{task.title}</h3>
+          <h3 className="font-semibold text-gray-900 text-lg">{task.title}</h3>
           {task.description && (
-            <p className={`text-sm mt-2 ${
-              task.status === 'completed' ? 'text-green-600' : 'text-gray-600'
-            }`}>{task.description}</p>
+            <p className="text-sm text-gray-600 mt-2">{task.description}</p>
           )}
         </div>
         {task.status !== 'completed' && (
