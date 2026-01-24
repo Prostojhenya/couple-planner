@@ -392,12 +392,6 @@ function DashboardContent() {
               <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl border-2 border-white/40 shadow-lg">
                 💑
               </div>
-              {activeScreen !== 'settings' && (
-                <div>
-                  <div className="text-sm opacity-90 font-medium">Привет!</div>
-                  <div className="font-bold text-xl">{user?.name || user?.email?.split('@')[0]}</div>
-                </div>
-              )}
             </div>
             <div className="flex gap-2 items-center relative">
               {loading && (
@@ -434,17 +428,6 @@ function DashboardContent() {
             </div>
           </div>
           
-          {activeScreen !== 'settings' && (
-            <>
-              <h1 className="text-2xl font-bold mb-2">TwoDo</h1>
-              <p className="text-sm text-white/90 mb-6">
-                {couple?.members?.length === 2 ? 
-                  `Вы и ${couple.members.find((m: any) => m.user.id !== user?.id)?.user.name || 'партнёр'}` : 
-                  'Пригласите партнёра'}
-              </p>
-            </>
-          )}
-
           {/* Progress Bar */}
           {activeScreen === 'home' && stats.total > 0 && (
             <div className="mb-6">
