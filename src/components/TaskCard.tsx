@@ -24,6 +24,7 @@ interface TaskCardProps {
 export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) {
   const [translateX, setTranslateX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const startX = useRef(0);
   const currentX = useRef(0);
 
@@ -50,21 +51,47 @@ export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) 
     currentX.current = e.touches[0].clientX;
     const diff = currentX.current - startX.current;
     
-    // Только свайп влево для удаления
-    if (diff < 0) {
-      setTranslateX(Math.max(diff, -100));
+    // Свайп влево для открытия, вправо для закрытия
+    if (isOpen) {
+      // Если уже открыто, можно свайпнуть вправо чтобы закрыть
+      if (diff > 0) {
+        setTranslateX(Math.min(diff - 80, 0));
+      }
+    } else {
+      // Если закрыто, свайп влево чтобы открыть
+      if (diff < 0) {
+        setTranslateX(Math.max(diff, -80));
+      }
     }
   };
 
   const handleTouchEnd = () => {
     setIsSwiping(false);
     
-    // Если свайпнули больше чем на 60px - удаляем
-    if (translateX < -60 && onDelete) {
-      onDelete(task.id);
+    if (isOpen) {
+      // Если открыто и свайпнули вправо больше чем на 40px - закрываем
+      if (translateX > -40) {
+        setTranslateX(0);
+        setIsOpen(false);
+      } else {
+        // Иначе возвращаем в открытое положение
+        setTranslateX(-80);
+      }
     } else {
-      // Возвращаем на место
-      setTranslateX(0);
+      // Если закрыто и свайпнули влево больше чем на 40px - открываем
+      if (translateX < -40) {
+        setTranslateX(-80);
+        setIsOpen(true);
+      } else {
+        // Иначе возвращаем на место
+        setTranslateX(0);
+      }
+    }
+  };
+
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(task.id);
     }
   };
 
@@ -72,14 +99,19 @@ export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) 
     <div className="relative overflow-hidden rounded-xl">
       {/* Фон с кнопкой удаления */}
       <div className="absolute inset-0 bg-red-500 flex items-center justify-end pr-6">
-        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-        </svg>
+        <button
+          onClick={handleDelete}
+          className="flex items-center justify-center w-12 h-12 text-white"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
       </div>
 
       {/* Карточка задачи */}
       <div
-        className="bg-white rounded-xl shadow-md hover:shadow-lg transition-all p-5 border border-gray-100 relative"
+        className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 border border-gray-100 relative"
         style={{
           transform: `translateX(${translateX}px)`,
           transition: isSwiping ? 'none' : 'transform 0.3s ease-out',
