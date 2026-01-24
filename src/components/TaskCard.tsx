@@ -1,7 +1,5 @@
 'use client';
 
-import { useState, useRef, TouchEvent } from 'react';
-
 interface TaskCardProps {
   task: {
     id: string;
@@ -21,13 +19,7 @@ interface TaskCardProps {
   onDelete?: (id: string) => void;
 }
 
-export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) {
-  const [translateX, setTranslateX] = useState(0);
-  const [isSwiping, setIsSwiping] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const startX = useRef(0);
-  const currentX = useRef(0);
-
+export default function TaskCard({ task, onComplete }: TaskCardProps) {
   const priorityColors = {
     low: 'bg-green-50 text-green-700 border-green-200',
     medium: 'bg-yellow-50 text-yellow-700 border-yellow-200',
@@ -41,142 +33,53 @@ export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) 
     postponed: 'bg-gray-50 text-gray-700 border-gray-200',
   };
 
-  const handleTouchStart = (e: TouchEvent) => {
-    startX.current = e.touches[0].clientX;
-    currentX.current = startX.current;
-    setIsSwiping(true);
-  };
-
-  const handleTouchMove = (e: TouchEvent) => {
-    if (!isSwiping) return;
-    currentX.current = e.touches[0].clientX;
-    const diff = currentX.current - startX.current;
-    
-    if (isOpen) {
-      // Если открыто, можно свайпнуть вправо чтобы закрыть
-      if (diff > 0) {
-        setTranslateX(Math.min(diff - 100, 0));
-      } else {
-        setTranslateX(-100);
-      }
-    } else {
-      // Если закрыто, свайп влево чтобы открыть
-      if (diff < 0) {
-        setTranslateX(Math.max(diff, -100));
-      } else {
-        setTranslateX(0);
-      }
-    }
-  };
-
-  const handleTouchEnd = () => {
-    setIsSwiping(false);
-    const diff = currentX.current - startX.current;
-    
-    if (isOpen) {
-      // Если открыто и свайпнули вправо больше чем на 50px - закрываем
-      if (diff > 50) {
-        setTranslateX(0);
-        setIsOpen(false);
-      } else if (diff < -30 && onDelete) {
-        // Если свайпнули ещё левее - удаляем
-        console.log('🗑️ DELETING TASK', task.id);
-        onDelete(task.id);
-      } else {
-        // Иначе возвращаем в открытое положение
-        setTranslateX(-100);
-      }
-    } else {
-      // Если закрыто и свайпнули влево больше чем на 150px - УДАЛЯЕМ СРАЗУ
-      if (diff < -150 && onDelete) {
-        console.log('🗑️ DELETING TASK', task.id);
-        onDelete(task.id);
-      } else if (diff < -50) {
-        // Если свайпнули влево на 50-150px - открываем
-        setTranslateX(-100);
-        setIsOpen(true);
-      } else {
-        // Иначе возвращаем на место
-        setTranslateX(0);
-      }
-    }
-  };
-
-  const handleDelete = (e: any) => {
-    e.stopPropagation();
-    e.preventDefault();
-    console.log('🗑️ DELETE BUTTON PRESSED!', task.id);
-    if (onDelete) {
-      onDelete(task.id);
-    }
-  };
-
   return (
-    <div className="relative">
-      <div className="relative overflow-hidden rounded-xl">
-        {/* Фон красный с текстом */}
-        <div className="absolute inset-0 bg-red-500 rounded-xl flex items-center justify-end pr-8">
-          <span className="text-white font-bold text-lg">Удалить</span>
-        </div>
-
-        {/* Карточка задачи */}
-        <div
-          className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 border border-gray-100 relative"
-          style={{
-            transform: `translateX(${translateX}px)`,
-            transition: isSwiping ? 'none' : 'transform 0.3s ease-out',
-          }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex-1">
-            <h3 className="font-semibold text-gray-900 text-lg">{task.title}</h3>
-            {task.description && (
-              <p className="text-sm text-gray-600 mt-2">{task.description}</p>
-            )}
-          </div>
-          {task.status !== 'completed' && (
-            <button
-              onClick={() => onComplete(task.id)}
-              className="ml-3 text-gray-400 hover:text-green-600 transition"
-            >
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </button>
+    <div className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow p-5 border border-gray-100">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex-1">
+          <h3 className="font-semibold text-gray-900 text-lg">{task.title}</h3>
+          {task.description && (
+            <p className="text-sm text-gray-600 mt-2">{task.description}</p>
           )}
         </div>
-
-        <div className="flex flex-wrap gap-2 mt-4">
-          <span className={`text-xs px-3 py-1.5 rounded-lg border font-medium ${priorityColors[task.priority as keyof typeof priorityColors]}`}>
-            {task.priority === 'low' ? 'Низкий' : task.priority === 'medium' ? 'Средний' : 'Высокий'}
-          </span>
-          <span className={`text-xs px-3 py-1.5 rounded-lg border font-medium ${statusColors[task.status as keyof typeof statusColors]}`}>
-            {task.status === 'new' ? 'Новая' : task.status === 'in_progress' ? 'В работе' : task.status === 'completed' ? 'Завершена' : 'Отложена'}
-          </span>
-          {task.isShared && (
-            <span className="text-xs px-3 py-1.5 rounded-lg bg-primary-50 text-primary-700 border border-primary-200 font-medium">
-              Общая
-            </span>
-          )}
-          <span className="text-xs px-3 py-1.5 rounded-lg bg-gray-50 text-gray-700 border border-gray-200 font-medium">
-            {task.assigneeType === 'me' ? 'Я' : task.assigneeType === 'partner' ? 'Партнёр' : 'Оба'}
-          </span>
-        </div>
-
-        {task.dueAt && (
-          <div className="text-xs text-gray-500 mt-3 flex items-center gap-1">
-            <span>📅</span>
-            <span>{new Date(task.dueAt).toLocaleDateString('ru-RU')}</span>
-          </div>
+        {task.status !== 'completed' && (
+          <button
+            onClick={() => onComplete(task.id)}
+            className="ml-3 text-gray-400 hover:text-green-600 transition"
+          >
+            <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+          </button>
         )}
+      </div>
 
-        <div className="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-100">
-          Создал: {task.owner.name || task.owner.email}
+      <div className="flex flex-wrap gap-2 mt-4">
+        <span className={`text-xs px-3 py-1.5 rounded-lg border font-medium ${priorityColors[task.priority as keyof typeof priorityColors]}`}>
+          {task.priority === 'low' ? 'Низкий' : task.priority === 'medium' ? 'Средний' : 'Высокий'}
+        </span>
+        <span className={`text-xs px-3 py-1.5 rounded-lg border font-medium ${statusColors[task.status as keyof typeof statusColors]}`}>
+          {task.status === 'new' ? 'Новая' : task.status === 'in_progress' ? 'В работе' : task.status === 'completed' ? 'Завершена' : 'Отложена'}
+        </span>
+        {task.isShared && (
+          <span className="text-xs px-3 py-1.5 rounded-lg bg-primary-50 text-primary-700 border border-primary-200 font-medium">
+            Общая
+          </span>
+        )}
+        <span className="text-xs px-3 py-1.5 rounded-lg bg-gray-50 text-gray-700 border border-gray-200 font-medium">
+          {task.assigneeType === 'me' ? 'Я' : task.assigneeType === 'partner' ? 'Партнёр' : 'Оба'}
+        </span>
+      </div>
+
+      {task.dueAt && (
+        <div className="text-xs text-gray-500 mt-3 flex items-center gap-1">
+          <span>📅</span>
+          <span>{new Date(task.dueAt).toLocaleDateString('ru-RU')}</span>
         </div>
-        </div>
+      )}
+
+      <div className="text-xs text-gray-400 mt-3 pt-3 border-t border-gray-100">
+        Создал: {task.owner.name || task.owner.email}
       </div>
     </div>
   );
