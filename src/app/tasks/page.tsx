@@ -94,6 +94,11 @@ export default function TasksPage() {
     if (filter === 'active') return task.status !== 'completed';
     if (filter === 'completed') return task.status === 'completed';
     return true;
+  }).sort((a: any, b: any) => {
+    // Сортировка: незавершенные задачи сначала, завершенные в конце
+    if (a.status === 'completed' && b.status !== 'completed') return 1;
+    if (a.status !== 'completed' && b.status === 'completed') return -1;
+    return 0;
   });
 
   return (
