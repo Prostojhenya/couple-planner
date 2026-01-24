@@ -78,13 +78,21 @@ export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) 
       if (diff > 50) {
         setTranslateX(0);
         setIsOpen(false);
+      } else if (diff < -30 && onDelete) {
+        // Если свайпнули ещё левее - удаляем
+        console.log('🗑️ DELETING TASK', task.id);
+        onDelete(task.id);
       } else {
         // Иначе возвращаем в открытое положение
         setTranslateX(-100);
       }
     } else {
-      // Если закрыто и свайпнули влево больше чем на 50px - открываем
-      if (diff < -50) {
+      // Если закрыто и свайпнули влево больше чем на 150px - УДАЛЯЕМ СРАЗУ
+      if (diff < -150 && onDelete) {
+        console.log('🗑️ DELETING TASK', task.id);
+        onDelete(task.id);
+      } else if (diff < -50) {
+        // Если свайпнули влево на 50-150px - открываем
         setTranslateX(-100);
         setIsOpen(true);
       } else {
@@ -106,8 +114,10 @@ export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) 
   return (
     <div className="relative">
       <div className="relative overflow-hidden rounded-xl">
-        {/* Фон красный */}
-        <div className="absolute inset-0 bg-red-500 rounded-xl"></div>
+        {/* Фон красный с текстом */}
+        <div className="absolute inset-0 bg-red-500 rounded-xl flex items-center justify-end pr-8">
+          <span className="text-white font-bold text-lg">Удалить</span>
+        </div>
 
         {/* Карточка задачи */}
         <div
@@ -116,9 +126,9 @@ export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) 
             transform: `translateX(${translateX}px)`,
             transition: isSwiping ? 'none' : 'transform 0.3s ease-out',
           }}
-          onTouchStart={!isOpen ? handleTouchStart : undefined}
-          onTouchMove={!isOpen ? handleTouchMove : undefined}
-          onTouchEnd={!isOpen ? handleTouchEnd : undefined}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
@@ -168,52 +178,6 @@ export default function TaskCard({ task, onComplete, onDelete }: TaskCardProps) 
         </div>
         </div>
       </div>
-
-      {/* Кнопка удаления ПОВЕРХ всего */}
-      {isOpen && onDelete && (
-        <div 
-          className="absolute inset-0 z-50"
-          onTouchStart={(e) => {
-            e.stopPropagation();
-            console.log('🔴 OVERLAY TOUCHED');
-          }}
-        >
-          <button
-            onTouchStart={(e) => {
-              e.stopPropagation();
-              console.log('🗑️ BUTTON TOUCH START');
-            }}
-            onTouchEnd={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              handleDelete(e);
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              handleDelete(e);
-            }}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-white active:scale-90 transition-transform bg-red-600 rounded-full p-4"
-            style={{ 
-              minWidth: '80px', 
-              minHeight: '80px',
-              touchAction: 'manipulation',
-            }}
-          >
-            <svg className="w-12 h-12 mx-auto" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
-          
-          {/* Область для закрытия свайпа */}
-          <div 
-            className="absolute left-0 top-0 bottom-0 right-24"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          />
-        </div>
-      )}
     </div>
   );
 }
