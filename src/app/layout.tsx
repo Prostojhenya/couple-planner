@@ -4,13 +4,13 @@ import MobileFullscreen from "./components/MobileFullscreen";
 import InstallPrompt from "./components/InstallPrompt";
 
 export const metadata: Metadata = {
-  title: "Планер для двоих",
+  title: "TwoDo",
   description: "Совместное планирование для пар",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Планер для двоих",
+    title: "TwoDo",
   },
 };
 

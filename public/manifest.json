@@ -1,6 +1,6 @@
 {
-  "name": "Планер для двоих",
-  "short_name": "Планер",
+  "name": "TwoDo",
+  "short_name": "TwoDo",
   "description": "Совместное планирование для пар",
   "start_url": "/",
   "display": "standalone",
