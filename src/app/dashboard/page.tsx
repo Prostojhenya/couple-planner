@@ -12,6 +12,7 @@ import GroupClusterIcon from '@/components/GroupClusterIcon';
 import Toast from '@/components/Toast';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import CommentSection from '@/components/CommentSection';
 
 // Отключаем статическую генерацию для этой страницы
 export const dynamic = 'force-dynamic';
@@ -1226,6 +1227,15 @@ function DashboardContent() {
                     </div>
                   </div>
                 )}
+
+                {/* Comments Section */}
+                <div className="pt-4 border-t border-gray-100">
+                  <CommentSection
+                    entityType="task"
+                    entityId={selectedTask.id}
+                    currentUserId={user?.id}
+                  />
+                </div>
               </div>
             </div>
             
@@ -1392,9 +1402,16 @@ function DashboardContent() {
                 </div>
                 
                 <div className="pt-3 border-t border-gray-100">
-                  <div className="text-xs text-gray-400">
+                  <div className="text-xs text-gray-400 mb-4">
                     Создал: {selectedEvent.createdBy.name || selectedEvent.createdBy.email.split('@')[0]}
                   </div>
+
+                  {/* Comments Section */}
+                  <CommentSection
+                    entityType="event"
+                    entityId={selectedEvent.id}
+                    currentUserId={user?.id}
+                  />
                 </div>
               </div>
             </div>
