@@ -281,8 +281,8 @@ export default function ShoppingPage() {
         ) : lists.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-7xl mb-4">🛒</div>
-            <p className="text-gray-600 font-semibold text-lg">Нет списков</p>
-            <p className="text-sm text-gray-400 mt-2">Создайте первый список покупок</p>
+            <p className="text-gray-600 font-semibold text-lg">Пока нет общих списков</p>
+            <p className="text-sm text-gray-400 mt-2">Создайте первый список покупок вместе</p>
           </div>
         ) : currentList ? (
           <div>
@@ -389,9 +389,9 @@ export default function ShoppingPage() {
 
             {items.length === 0 && (
               <div className="text-center py-20">
-                <div className="text-7xl mb-4">📝</div>
-                <p className="text-gray-600 font-semibold text-lg">Список пуст</p>
-                <p className="text-sm text-gray-400 mt-2">Добавьте первый товар</p>
+                <div className="text-7xl mb-4">🛒</div>
+                <p className="text-gray-600 font-semibold text-lg">Пока ничего не запланировали вместе</p>
+                <p className="text-sm text-gray-400 mt-2">Добавьте первый товар в список</p>
               </div>
             )}
           </div>
