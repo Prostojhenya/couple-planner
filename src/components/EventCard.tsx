@@ -56,7 +56,7 @@ export default function EventCard({ event, onClick }: EventCardProps) {
   return (
     <div 
       onClick={onClick}
-      className={`bg-white rounded-2xl shadow-md p-5 hover:shadow-xl transition-all border-l-4 ${eventType.color} cursor-pointer active:scale-[0.98]`}
+      className={`bg-white rounded-2xl shadow-md p-5 hover:shadow-xl transition-all border-l-4 ${eventType.color} cursor-pointer active:scale-[0.98] animate-scaleIn`}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">

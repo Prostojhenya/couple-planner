@@ -82,7 +82,7 @@ export default function TaskCard({ task, currentUserId, partnerName, onComplete 
 
   return (
     <>
-      <div className={`rounded-xl shadow-md hover:shadow-lg transition-all p-5 border-l-4 border ${
+      <div className={`rounded-xl shadow-md hover:shadow-lg transition-all p-5 border-l-4 border animate-scaleIn ${
         task.status === 'completed' 
           ? 'bg-green-50 border-green-200 border-l-green-400' 
           : `bg-white border-gray-100 ${priorityBorderColors[task.priority as keyof typeof priorityBorderColors]}`

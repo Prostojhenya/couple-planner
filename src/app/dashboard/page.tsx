@@ -774,52 +774,84 @@ function DashboardContent() {
 
         {activeScreen === 'settings' && (
           <div className="space-y-4">
-            {/* Карточка пары */}
+            {/* Верхняя карточка с градиентом */}
             {couple && couple.members && couple.members.length === 2 && (
-              <div className="bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl p-6 shadow-lg text-white">
-                <div className="text-center">
-                  <div className="text-5xl mb-3">💜</div>
-                  <h2 className="text-2xl font-bold mb-2">
-                    {couple.members[0].user.name || couple.members[0].user.email.split('@')[0]} & {couple.members[1].user.name || couple.members[1].user.email.split('@')[0]}
-                  </h2>
-                  <p className="text-white/80 text-sm">Вы вместе в TwoDo</p>
+              <div className="bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 rounded-3xl p-6 shadow-xl">
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 flex items-center gap-4">
+                  <div className="relative">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center text-white text-xl font-bold">
+                      {(couple.members[0].user.name || couple.members[0].user.email)[0].toUpperCase()}-{(couple.members[1].user.name || couple.members[1].user.email)[0].toUpperCase()}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md">
+                      <span className="text-sm">👤</span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h2 className="text-xl font-bold text-gray-900">
+                      {couple.members[0].user.name || couple.members[0].user.email.split('@')[0]} & {couple.members[1].user.name || couple.members[1].user.email.split('@')[0]}
+                    </h2>
+                    <p className="text-sm text-gray-600">Вы вместе в TwoDo</p>
+                    <p className="text-xs text-gray-500 mt-0.5">Планируйте, наслаждайтесь</p>
+                  </div>
+                  <button className="w-10 h-10 bg-white/50 rounded-full flex items-center justify-center hover:bg-white/70 transition">
+                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             )}
 
-            {/* Блок: Профиль */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="text-xl">👤</span>
-                <span>Профиль</span>
-              </h3>
-              
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Имя</label>
-                  <div className="text-gray-900 font-medium">{user?.name || 'Не указано'}</div>
-                </div>
-                
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
-                  <div className="text-gray-900 font-medium">{user?.email}</div>
-                </div>
-              </div>
-            </div>
-
             {/* Блок: Пара */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="text-xl">💑</span>
-                <span>Пара</span>
-              </h3>
+            <div className="bg-white rounded-3xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <span className="text-xl">💑</span>
+                  <span>Пара</span>
+                </h3>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
               
               {couple ? (
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">Участники</label>
-                    <div className="text-gray-900 font-medium">
-                      {couple.members?.map((m: any) => m.user.name || m.user.email).join(' и ')}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                        <span className="text-lg">👥</span>
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-gray-900">Кто может добавлять</div>
+                        <div className="text-xs text-gray-500">
+                          {couple.members?.map((m: any) => m.user.name || m.user.email.split('@')[0]).join(' & ')}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex -space-x-2">
+                      {couple.members?.map((m: any, i: number) => (
+                        <div key={i} className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-white">
+                          {(m.user.name || m.user.email)[0].toUpperCase()}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                        <span className="text-lg">🏠</span>
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-gray-900">Подтверждени новых задач</div>
+                        <div className="text-xs text-gray-500">Женя</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">Включено</span>
+                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </div>
                   </div>
                 </div>
@@ -837,30 +869,104 @@ function DashboardContent() {
             </div>
 
             {/* Блок: Приложение */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="text-xl">🔔</span>
-                <span>Приложение</span>
-              </h3>
+            <div className="bg-white rounded-3xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <span className="text-xl">⚙️</span>
+                  <span>Приложение</span>
+                </h3>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
               
-              <div className="space-y-3">
+              <div className="space-y-0">
+                <div className="flex items-center justify-between py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                      <span className="text-lg">🌙</span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900">Тема</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">Светлая</span>
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between py-3 border-t border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
+                      <span className="text-lg">🌐</span>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900">Язык</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-500">Русский</span>
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Блок: Уведомления */}
+            <div className="bg-white rounded-3xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <span className="text-xl">🔔</span>
+                  <span>Уведомления</span>
+                </h3>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
+              
+              <div className="text-sm text-gray-600">
                 <PushNotificationSetup />
               </div>
             </div>
 
             {/* Блок: Аккаунт */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="text-xl">⚙️</span>
-                <span>Аккаунт</span>
-              </h3>
+            <div className="bg-white rounded-3xl p-6 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                  <span className="text-xl">🚪</span>
+                  <span>Аккаунт</span>
+                </h3>
+                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
               
-              <button
-                onClick={handleLogout}
-                className="w-full px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition text-sm"
-              >
-                Выйти из аккаунта
-              </button>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between py-2">
+                  <div>
+                    <div className="text-xs font-medium text-gray-500">Имя</div>
+                    <div className="text-sm text-gray-900 font-medium mt-0.5">{user?.name || 'Не указано'}</div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between py-2 border-t border-gray-100">
+                  <div>
+                    <div className="text-xs font-medium text-gray-500">Email</div>
+                    <div className="text-sm text-gray-900 font-medium mt-0.5">{user?.email}</div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleLogout}
+                  className="w-full mt-4 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition text-sm flex items-center justify-center gap-2"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Выйти из аккаунта
+                </button>
+              </div>
             </div>
           </div>
         )}
