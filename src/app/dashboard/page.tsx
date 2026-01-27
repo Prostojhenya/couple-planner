@@ -382,11 +382,54 @@ function DashboardContent() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-16 text-gray-900 overflow-x-hidden" style={{ margin: 0, padding: 0, paddingBottom: '4rem', minHeight: '100vh', maxWidth: '100vw' }}>
       {/* Mobile Header */}
-      <div className="header-fullscreen bg-gradient-to-br from-primary-600 via-primary-500 to-secondary-500 text-white px-6 pb-8 rounded-b-[2.5rem] shadow-2xl relative overflow-hidden" style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))' }}>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
-        
-        <div className="relative z-10">
+      {activeScreen === 'settings' ? (
+        // Settings Header - Full width gradient with white card inside
+        <div className="header-fullscreen bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 px-4 pb-6 relative overflow-hidden" style={{ paddingTop: 'calc(2rem + env(safe-area-inset-top))' }}>
+          <div className="relative z-10 max-w-2xl mx-auto">
+            <div className="flex items-center justify-between mb-4">
+              <button
+                onClick={() => setActiveScreen('home')}
+                className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center hover:bg-white/30 transition"
+              >
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+              </button>
+              <button className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center hover:bg-white/30 transition">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+            </div>
+            
+            {couple && couple.members && couple.members.length === 2 && (
+              <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-5 flex items-center gap-4 shadow-xl">
+                <div className="relative flex-shrink-0">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                    {(couple.members[0].user.name || couple.members[0].user.email)[0].toUpperCase()}-{(couple.members[1].user.name || couple.members[1].user.email)[0].toUpperCase()}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md">
+                    <span className="text-sm">👤</span>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-xl font-bold text-gray-900 truncate">
+                    {couple.members[0].user.name || couple.members[0].user.email.split('@')[0]} & {couple.members[1].user.name || couple.members[1].user.email.split('@')[0]}
+                  </h2>
+                  <p className="text-sm text-gray-600">Вы вместе в TwoDo</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Планируйте, наслаждайтесь</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        // Default Header for other screens
+        <div className="header-fullscreen bg-gradient-to-br from-primary-600 via-primary-500 to-secondary-500 text-white px-6 pb-8 rounded-b-[2.5rem] shadow-2xl relative overflow-hidden" style={{ paddingTop: 'calc(3rem + env(safe-area-inset-top))' }}>
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
+          
+          <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <button
@@ -468,8 +511,9 @@ function DashboardContent() {
               </div>
             </div>
           )}
+          </div>
         </div>
-      </div>
+      )}
 
 
 
@@ -774,34 +818,6 @@ function DashboardContent() {
 
         {activeScreen === 'settings' && (
           <div className="space-y-4">
-            {/* Верхняя карточка с градиентом */}
-            {couple && couple.members && couple.members.length === 2 && (
-              <div className="bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 rounded-3xl p-6 shadow-xl">
-                <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 flex items-center gap-4">
-                  <div className="relative">
-                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center text-white text-xl font-bold">
-                      {(couple.members[0].user.name || couple.members[0].user.email)[0].toUpperCase()}-{(couple.members[1].user.name || couple.members[1].user.email)[0].toUpperCase()}
-                    </div>
-                    <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md">
-                      <span className="text-sm">👤</span>
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <h2 className="text-xl font-bold text-gray-900">
-                      {couple.members[0].user.name || couple.members[0].user.email.split('@')[0]} & {couple.members[1].user.name || couple.members[1].user.email.split('@')[0]}
-                    </h2>
-                    <p className="text-sm text-gray-600">Вы вместе в TwoDo</p>
-                    <p className="text-xs text-gray-500 mt-0.5">Планируйте, наслаждайтесь</p>
-                  </div>
-                  <button className="w-10 h-10 bg-white/50 rounded-full flex items-center justify-center hover:bg-white/70 transition">
-                    <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Блок: Пара */}
             <div className="bg-white rounded-3xl p-6 shadow-lg">
               <div className="flex items-center justify-between mb-4">
