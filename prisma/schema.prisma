@@ -22,6 +22,8 @@ model User {
   comments          Comment[]
   notifications     Notification[]
   sentInvites       Invite[]
+  addedShoppingItems     ShoppingItem[] @relation("ShoppingItemAddedBy")
+  purchasedShoppingItems ShoppingItem[] @relation("ShoppingItemPurchasedBy")
 
   @@map("users")
 }
@@ -166,6 +168,8 @@ model ShoppingItem {
   updatedAt      DateTime @updatedAt
 
   shoppingList ShoppingList @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+  addedBy      User         @relation("ShoppingItemAddedBy", fields: [addedById], references: [id])
+  purchasedBy  User?        @relation("ShoppingItemPurchasedBy", fields: [purchasedById], references: [id])
 
   @@map("shopping_items")
 }

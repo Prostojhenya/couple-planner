@@ -339,6 +339,11 @@ export default function ShoppingPage() {
                       ></button>
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900">{item.name}</div>
+                        {item.addedBy && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Добавил{item.addedBy.name ? ` ${item.addedBy.name}` : 'а'}
+                          </div>
+                        )}
                       </div>
                       <button
                         onClick={() => deleteItem(item.id)}
@@ -372,6 +377,17 @@ export default function ShoppingPage() {
                       </button>
                       <div className="flex-1">
                         <div className="font-semibold text-gray-900 line-through">{item.name}</div>
+                        <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
+                          {item.addedBy && (
+                            <span>Добавил{item.addedBy.name ? ` ${item.addedBy.name}` : 'а'}</span>
+                          )}
+                          {item.purchasedBy && (
+                            <>
+                              <span>•</span>
+                              <span>Купил{item.purchasedBy.name ? ` ${item.purchasedBy.name}` : ''}</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                       <button
                         onClick={() => deleteItem(item.id)}

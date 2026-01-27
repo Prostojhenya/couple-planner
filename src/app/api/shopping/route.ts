@@ -45,7 +45,29 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json(lists);
+    // Получаем информацию о пользователях для каждого item
+    const listsWithUsers = await Promise.all(
+      lists.map(async (list) => {
+        const itemsWithUsers = await Promise.all(
+          list.items.map(async (item) => {
+            const addedBy = await prisma.user.findUnique({
+              where: { id: item.addedById },
+              select: { id: true, name: true, email: true },
+            });
+            const purchasedBy = item.purchasedById
+              ? await prisma.user.findUnique({
+                  where: { id: item.purchasedById },
+                  select: { id: true, name: true, email: true },
+                })
+              : null;
+            return { ...item, addedBy, purchasedBy };
+          })
+        );
+        return { ...list, items: itemsWithUsers };
+      })
+    );
+
+    return NextResponse.json(listsWithUsers);
   } catch (error) {
     console.error('Error fetching shopping lists:', error);
     return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
