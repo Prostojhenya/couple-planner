@@ -653,67 +653,213 @@ function DashboardContent() {
         {activeScreen === 'events' && (
           <div>
             {/* Events List */}
-            <div className="space-y-3">
-              {events.length === 0 ? (
-                <div className="text-center py-20">
-                  <div className="text-7xl mb-4">📅</div>
-                  <p className="text-gray-600 font-semibold text-lg">Нет событий</p>
-                  <p className="text-sm text-gray-400 mt-2">Добавьте первое событие</p>
-                </div>
-              ) : (
-                events.map((event: any) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    onClick={() => setSelectedEvent(event)}
-                  />
-                ))
-              )}
-            </div>
+            {events.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="text-7xl mb-4">📅</div>
+                <p className="text-gray-600 font-semibold text-lg">Нет событий</p>
+                <p className="text-sm text-gray-400 mt-2">Добавьте первое событие</p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {(() => {
+                  const now = new Date();
+                  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                  const tomorrow = new Date(today);
+                  tomorrow.setDate(tomorrow.getDate() + 1);
+                  const weekLater = new Date(today);
+                  weekLater.setDate(weekLater.getDate() + 7);
+
+                  const todayEvents = events.filter((e: any) => {
+                    const eventDate = new Date(e.startAt);
+                    return eventDate >= today && eventDate < tomorrow;
+                  });
+
+                  const tomorrowEvents = events.filter((e: any) => {
+                    const eventDate = new Date(e.startAt);
+                    return eventDate >= tomorrow && eventDate < new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000);
+                  });
+
+                  const thisWeekEvents = events.filter((e: any) => {
+                    const eventDate = new Date(e.startAt);
+                    const dayAfterTomorrow = new Date(tomorrow);
+                    dayAfterTomorrow.setDate(dayAfterTomorrow.getDate() + 1);
+                    return eventDate >= dayAfterTomorrow && eventDate < weekLater;
+                  });
+
+                  const laterEvents = events.filter((e: any) => {
+                    const eventDate = new Date(e.startAt);
+                    return eventDate >= weekLater;
+                  });
+
+                  return (
+                    <>
+                      {todayEvents.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <span className="text-2xl">🔥</span>
+                            <span>Сегодня</span>
+                          </h3>
+                          <div className="space-y-3">
+                            {todayEvents.map((event: any) => (
+                              <EventCard
+                                key={event.id}
+                                event={event}
+                                onClick={() => setSelectedEvent(event)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {tomorrowEvents.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <span className="text-2xl">⏰</span>
+                            <span>Завтра</span>
+                          </h3>
+                          <div className="space-y-3">
+                            {tomorrowEvents.map((event: any) => (
+                              <EventCard
+                                key={event.id}
+                                event={event}
+                                onClick={() => setSelectedEvent(event)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {thisWeekEvents.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <span className="text-2xl">📅</span>
+                            <span>На этой неделе</span>
+                          </h3>
+                          <div className="space-y-3">
+                            {thisWeekEvents.map((event: any) => (
+                              <EventCard
+                                key={event.id}
+                                event={event}
+                                onClick={() => setSelectedEvent(event)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {laterEvents.length > 0 && (
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <span className="text-2xl">🗓️</span>
+                            <span>Позже</span>
+                          </h3>
+                          <div className="space-y-3">
+                            {laterEvents.map((event: any) => (
+                              <EventCard
+                                key={event.id}
+                                event={event}
+                                onClick={() => setSelectedEvent(event)}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+            )}
           </div>
         )}
 
         {activeScreen === 'settings' && (
-          <div>
-            <div className="bg-white rounded-2xl p-6 mb-4 shadow-lg">
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Настройки</h2>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Имя</label>
-                  <div className="text-gray-900">{user?.name || 'Не указано'}</div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                  <div className="text-gray-900">{user?.email}</div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Пара</label>
-                  {couple ? (
-                    <div className="text-gray-900">
-                      {couple.members?.map((m: any) => m.user.name || m.user.email).join(' и ')}
-                    </div>
-                  ) : (
-                    <div>
-                      <div className="text-gray-500 mb-3">Вы ещё не создали пару</div>
-                      <button
-                        onClick={handleCreateCouple}
-                        className="w-full px-4 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl font-semibold hover:shadow-lg transition"
-                      >
-                        💑 Создать пару
-                      </button>
-                    </div>
-                  )}
+          <div className="space-y-4">
+            {/* Карточка пары */}
+            {couple && couple.members && couple.members.length === 2 && (
+              <div className="bg-gradient-to-br from-primary-500 to-secondary-500 rounded-2xl p-6 shadow-lg text-white">
+                <div className="text-center">
+                  <div className="text-5xl mb-3">💜</div>
+                  <h2 className="text-2xl font-bold mb-2">
+                    {couple.members[0].user.name || couple.members[0].user.email.split('@')[0]} & {couple.members[1].user.name || couple.members[1].user.email.split('@')[0]}
+                  </h2>
+                  <p className="text-white/80 text-sm">Вы вместе в TwoDo</p>
                 </div>
               </div>
+            )}
+
+            {/* Блок: Профиль */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="text-xl">👤</span>
+                <span>Профиль</span>
+              </h3>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Имя</label>
+                  <div className="text-gray-900 font-medium">{user?.name || 'Не указано'}</div>
+                </div>
+                
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
+                  <div className="text-gray-900 font-medium">{user?.email}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Блок: Пара */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="text-xl">💑</span>
+                <span>Пара</span>
+              </h3>
+              
+              {couple ? (
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Участники</label>
+                    <div className="text-gray-900 font-medium">
+                      {couple.members?.map((m: any) => m.user.name || m.user.email).join(' и ')}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-gray-500 text-sm mb-3">Вы ещё не создали пару</p>
+                  <button
+                    onClick={handleCreateCouple}
+                    className="w-full px-4 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl font-semibold hover:shadow-lg transition"
+                  >
+                    💑 Создать пару
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Блок: Приложение */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="text-xl">🔔</span>
+                <span>Приложение</span>
+              </h3>
+              
+              <div className="space-y-3">
+                <PushNotificationSetup />
+              </div>
+            </div>
+
+            {/* Блок: Аккаунт */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg">
+              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="text-xl">⚙️</span>
+                <span>Аккаунт</span>
+              </h3>
               
               <button
                 onClick={handleLogout}
-                className="w-full mt-6 px-4 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition"
+                className="w-full px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition text-sm"
               >
-                Выйти
+                Выйти из аккаунта
               </button>
             </div>
           </div>

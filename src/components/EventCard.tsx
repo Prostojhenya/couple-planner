@@ -16,6 +16,23 @@ interface EventCardProps {
   onClick?: () => void;
 }
 
+// Определяем тип события по ключевым словам
+const getEventType = (title: string, description: string | null) => {
+  const text = `${title} ${description || ''}`.toLowerCase();
+  
+  if (text.match(/день рожден|др|birthday/)) return { icon: '🎂', color: 'border-pink-400' };
+  if (text.match(/годовщин|anniversary/)) return { icon: '💕', color: 'border-red-400' };
+  if (text.match(/путешеств|поездк|отпуск|trip|travel/)) return { icon: '✈️', color: 'border-blue-400' };
+  if (text.match(/свадьб|wedding/)) return { icon: '💒', color: 'border-purple-400' };
+  if (text.match(/встреч|meeting|кафе|ресторан/)) return { icon: '☕', color: 'border-amber-400' };
+  if (text.match(/кино|фильм|movie|cinema/)) return { icon: '🎬', color: 'border-indigo-400' };
+  if (text.match(/спорт|тренировк|gym/)) return { icon: '🏃', color: 'border-green-400' };
+  if (text.match(/дом|ремонт|уборк|home/)) return { icon: '🏡', color: 'border-teal-400' };
+  if (text.match(/врач|доктор|doctor|hospital/)) return { icon: '🏥', color: 'border-red-400' };
+  
+  return { icon: '📅', color: 'border-secondary-500' };
+};
+
 export default function EventCard({ event, onClick }: EventCardProps) {
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('ru-RU', {
@@ -34,10 +51,12 @@ export default function EventCard({ event, onClick }: EventCardProps) {
     });
   };
 
+  const eventType = getEventType(event.title, event.description);
+
   return (
     <div 
       onClick={onClick}
-      className="bg-white rounded-2xl shadow-md p-5 hover:shadow-xl transition-all border-l-4 border-secondary-500 cursor-pointer active:scale-[0.98]"
+      className={`bg-white rounded-2xl shadow-md p-5 hover:shadow-xl transition-all border-l-4 ${eventType.color} cursor-pointer active:scale-[0.98]`}
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex-1">
@@ -46,7 +65,7 @@ export default function EventCard({ event, onClick }: EventCardProps) {
             <p className="text-sm text-gray-600 line-clamp-2">{event.description}</p>
           )}
         </div>
-        <div className="text-3xl ml-3">📅</div>
+        <div className="text-3xl ml-3">{eventType.icon}</div>
       </div>
 
       <div className="space-y-2">
