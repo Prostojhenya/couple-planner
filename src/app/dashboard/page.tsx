@@ -8,6 +8,7 @@ import EventCard from '@/components/EventCard';
 import TaskForm from '@/components/TaskForm';
 import EventForm from '@/components/EventForm';
 import PushNotificationSetup from '@/components/PushNotificationSetup';
+import GroupClusterIcon from '@/components/GroupClusterIcon';
 
 // Отключаем статическую генерацию для этой страницы
 export const dynamic = 'force-dynamic';
@@ -248,7 +249,7 @@ function DashboardContent() {
       console.log('Create couple response:', data);
 
       if (res.ok) {
-        alert('Пара успешно создана!');
+        alert('Группа успешно создана!');
         loadCouple();
         loadData();
       } else {
@@ -371,7 +372,9 @@ function DashboardContent() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary-600 via-primary-500 to-secondary-500 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-7xl mb-6 animate-bounce">💑</div>
+          <div className="mb-6 animate-bounce flex justify-center">
+            <GroupClusterIcon memberCount={1} maxMembers={5} subscription="free" size="lg" />
+          </div>
           <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
           <p className="text-white font-semibold mt-6 text-lg">Загрузка...</p>
         </div>
@@ -402,22 +405,22 @@ function DashboardContent() {
               </button>
             </div>
             
-            {couple && couple.members && couple.members.length === 2 && (
+            {couple && couple.members && couple.members.length >= 2 && (
               <div className="bg-white/95 backdrop-blur-sm rounded-3xl p-5 flex items-center gap-4 shadow-xl">
                 <div className="relative flex-shrink-0">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg">
-                    {(couple.members[0].user.name || couple.members[0].user.email)[0].toUpperCase()}-{(couple.members[1].user.name || couple.members[1].user.email)[0].toUpperCase()}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md">
-                    <span className="text-sm">👤</span>
-                  </div>
+                  <GroupClusterIcon 
+                    memberCount={couple.members.length} 
+                    maxMembers={couple.maxMembers || 5}
+                    subscription={couple.subscription || 'free'}
+                    size="md"
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h2 className="text-xl font-bold text-gray-900 truncate">
-                    {couple.members[0].user.name || couple.members[0].user.email.split('@')[0]} & {couple.members[1].user.name || couple.members[1].user.email.split('@')[0]}
+                    {couple.members.map((m: any) => m.user.name || m.user.email.split('@')[0]).join(', ')}
                   </h2>
-                  <p className="text-sm text-gray-600">Вы вместе в TwoDo</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Планируйте, наслаждайтесь</p>
+                  <p className="text-sm text-gray-600">Группа в TwoDo</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{couple.members.length} из {couple.maxMembers || 5} участников</p>
                 </div>
               </div>
             )}
@@ -434,9 +437,14 @@ function DashboardContent() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setActiveScreen('settings')}
-                className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl border-2 border-white/40 shadow-lg hover:bg-white/30 active:scale-95 transition-all"
+                className="flex items-center justify-center"
               >
-                💑
+                <GroupClusterIcon 
+                  memberCount={couple?.members?.length || 1} 
+                  maxMembers={couple?.maxMembers || 5}
+                  subscription={couple?.subscription || 'free'}
+                  size="md"
+                />
               </button>
             </div>
             <div className="flex gap-2 items-center relative">
@@ -818,12 +826,12 @@ function DashboardContent() {
 
         {activeScreen === 'settings' && (
           <div className="space-y-4">
-            {/* Блок: Пара */}
+            {/* Блок: Группа */}
             <div className="bg-white rounded-3xl p-6 shadow-lg">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                  <span className="text-xl">💑</span>
-                  <span>Пара</span>
+                  <span className="text-xl">👥</span>
+                  <span>Группа</span>
                 </h3>
                 <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -834,13 +842,16 @@ function DashboardContent() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-                        <span className="text-lg">👥</span>
-                      </div>
+                      <GroupClusterIcon 
+                        memberCount={couple.members?.length || 1} 
+                        maxMembers={couple.maxMembers || 5}
+                        subscription={couple.subscription || 'free'}
+                        size="sm"
+                      />
                       <div>
-                        <div className="text-sm font-semibold text-gray-900">Кто может добавлять</div>
+                        <div className="text-sm font-semibold text-gray-900">Участники группы</div>
                         <div className="text-xs text-gray-500">
-                          {couple.members?.map((m: any) => m.user.name || m.user.email.split('@')[0]).join(' & ')}
+                          {couple.members?.length || 0} из {couple.maxMembers || 5}
                         </div>
                       </div>
                     </div>
@@ -853,32 +864,32 @@ function DashboardContent() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                        <span className="text-lg">🏠</span>
+                  <div className="pt-3 border-t border-gray-100">
+                    <div className="text-xs text-gray-500 mb-2">Список участников:</div>
+                    {couple.members?.map((m: any, i: number) => (
+                      <div key={i} className="flex items-center gap-2 py-2">
+                        <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-400 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                          {(m.user.name || m.user.email)[0].toUpperCase()}
+                        </div>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-gray-900">{m.user.name || m.user.email.split('@')[0]}</div>
+                          <div className="text-xs text-gray-500">{m.user.email}</div>
+                        </div>
+                        {m.role === 'owner' && (
+                          <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-semibold">Владелец</span>
+                        )}
                       </div>
-                      <div>
-                        <div className="text-sm font-semibold text-gray-900">Подтверждени новых задач</div>
-                        <div className="text-xs text-gray-500">Женя</div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">Включено</span>
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </div>
+                    ))}
                   </div>
                 </div>
               ) : (
                 <div>
-                  <p className="text-gray-500 text-sm mb-3">Вы ещё не создали пару</p>
+                  <p className="text-gray-500 text-sm mb-3">Вы ещё не создали группу</p>
                   <button
                     onClick={handleCreateCouple}
                     className="w-full px-4 py-3 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-xl font-semibold hover:shadow-lg transition"
                   >
-                    💑 Создать пару
+                    👥 Создать группу
                   </button>
                 </div>
               )}
@@ -1310,7 +1321,7 @@ function DashboardContent() {
                     <div>
                       <div className="text-sm text-gray-600">Участники</div>
                       <div className="font-semibold text-gray-900">
-                        {selectedEvent.participants === 'both' ? 'Оба' : selectedEvent.participants === 'me' ? 'Я' : 'Партнёр'}
+                        {selectedEvent.participants === 'both' ? 'Все' : selectedEvent.participants === 'me' ? 'Я' : 'Другие'}
                       </div>
                     </div>
                   </div>

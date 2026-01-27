@@ -29,8 +29,11 @@ model User {
 }
 
 model CoupleSpace {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
+  id           String   @id @default(cuid())
+  name         String?
+  maxMembers   Int      @default(5)
+  subscription String   @default("free")
+  createdAt    DateTime @default(now())
 
   members CoupleMembers[]
   tasks   Task[]

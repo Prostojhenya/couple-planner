@@ -30,14 +30,15 @@ export async function POST(req: NextRequest) {
 
     if (!membership) {
       return NextResponse.json(
-        { error: 'Сначала создайте пространство пары' },
+        { error: 'Сначала создайте группу' },
         { status: 400 }
       );
     }
 
-    if (membership.couple.members.length >= 2) {
+    const maxMembers = membership.couple.maxMembers || 5;
+    if (membership.couple.members.length >= maxMembers) {
       return NextResponse.json(
-        { error: 'В паре уже 2 участника' },
+        { error: `В группе уже максимум участников (${maxMembers})` },
         { status: 400 }
       );
     }

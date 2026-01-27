@@ -22,23 +22,25 @@ export async function POST(req: NextRequest) {
       where: { userId: payload.userId },
     });
 
-    console.log('🔵 Create couple - Existing membership:', existingMembership ? 'yes' : 'no');
+    console.log('🔵 Create group - Existing membership:', existingMembership ? 'yes' : 'no');
 
     if (existingMembership) {
       return NextResponse.json(
-        { error: 'Вы уже состоите в паре' },
+        { error: 'Вы уже состоите в группе' },
         { status: 400 }
       );
     }
 
-    console.log('🔵 Create couple - Creating couple space...');
+    console.log('🔵 Create group - Creating group space...');
     
     const coupleSpace = await prisma.coupleSpace.create({
       data: {
+        maxMembers: 5,
+        subscription: 'free',
         members: {
           create: {
             userId: payload.userId,
-            role: 'member',
+            role: 'owner',
           },
         },
       },
@@ -57,7 +59,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    console.log('✅ Create couple - Success! Couple ID:', coupleSpace.id);
+    console.log('✅ Create group - Success! Group ID:', coupleSpace.id);
     return NextResponse.json(coupleSpace);
   } catch (error) {
     console.error('❌ Create couple - Error:', error);
