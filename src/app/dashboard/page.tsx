@@ -1228,7 +1228,7 @@ function DashboardContent() {
                   </div>
                 )}
 
-                {/* Comments Section */}
+                {/* Comments Section - Временно отключено до применения миграции БД
                 <div className="pt-4 border-t border-gray-100">
                   <CommentSection
                     entityType="task"
@@ -1236,6 +1236,7 @@ function DashboardContent() {
                     currentUserId={user?.id}
                   />
                 </div>
+                */}
               </div>
             </div>
             
@@ -1463,12 +1464,13 @@ function DashboardContent() {
                     Создал: {selectedEvent.createdBy.name || selectedEvent.createdBy.email.split('@')[0]}
                   </div>
 
-                  {/* Comments Section */}
+                  {/* Comments Section - Временно отключено до применения миграции БД
                   <CommentSection
                     entityType="event"
                     entityId={selectedEvent.id}
                     currentUserId={user?.id}
                   />
+                  */}
                 </div>
               </div>
             </div>
