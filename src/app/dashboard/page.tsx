@@ -1241,31 +1241,88 @@ function DashboardContent() {
             
             {/* Sticky Footer */}
             <div className="flex gap-2 p-4 pt-3 border-t border-gray-100 flex-shrink-0">
-              <button
-                onClick={() => setEditingTask(selectedTask)}
-                className="flex-1 px-3 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition text-sm"
-              >
-                ✏️ Редактировать
-              </button>
-              
-              {selectedTask.status !== 'completed' && (
-                <button
-                  onClick={() => {
-                    handleCompleteTask(selectedTask.id);
-                    setSelectedTask(null);
-                  }}
-                  className="flex-1 px-3 py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 transition text-sm"
-                >
-                  ✅ Завершить
-                </button>
+              {/* Approval buttons for partner */}
+              {selectedTask.requiresApproval && 
+               selectedTask.approvalStatus === 'pending' && 
+               selectedTask.ownerId !== user?.id && (
+                <>
+                  <button
+                    onClick={async () => {
+                      const token = localStorage.getItem('token');
+                      try {
+                        const res = await fetch(`/api/tasks/${selectedTask.id}/approve`, {
+                          method: 'POST',
+                          headers: { 'Authorization': `Bearer ${token}` },
+                        });
+                        if (res.ok) {
+                          setSelectedTask(null);
+                          loadData();
+                          setToast({ message: 'Задача подтверждена!', type: 'success' });
+                        }
+                      } catch (err) {
+                        setToast({ message: 'Ошибка подтверждения', type: 'error' });
+                      }
+                    }}
+                    className="flex-1 px-3 py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 transition text-sm"
+                  >
+                    ✅ Подтвердить
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const token = localStorage.getItem('token');
+                      try {
+                        const res = await fetch(`/api/tasks/${selectedTask.id}/decline`, {
+                          method: 'POST',
+                          headers: { 'Authorization': `Bearer ${token}` },
+                        });
+                        if (res.ok) {
+                          setSelectedTask(null);
+                          loadData();
+                          setToast({ message: 'Задача отклонена', type: 'info' });
+                        }
+                      } catch (err) {
+                        setToast({ message: 'Ошибка отклонения', type: 'error' });
+                      }
+                    }}
+                    className="flex-1 px-3 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition text-sm"
+                  >
+                    ❌ Отклонить
+                  </button>
+                </>
               )}
-              
-              <button
-                onClick={() => handleDeleteTask(selectedTask.id)}
-                className="flex-1 px-3 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition text-sm"
-              >
-                🗑️ Удалить
-              </button>
+
+              {/* Regular action buttons */}
+              {(!selectedTask.requiresApproval || 
+                selectedTask.approvalStatus !== 'pending' || 
+                selectedTask.ownerId === user?.id) && (
+                <>
+                  <button
+                    onClick={() => setEditingTask(selectedTask)}
+                    className="flex-1 px-3 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition text-sm"
+                  >
+                    ✏️ Редактировать
+                  </button>
+                  
+                  {selectedTask.status !== 'completed' && (
+                    <button
+                      onClick={() => {
+                        handleCompleteTask(selectedTask.id);
+                        setSelectedTask(null);
+                      }}
+                      className="flex-1 px-3 py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 transition text-sm"
+                    >
+                      ✅ Завершить
+                    </button>
+                  )}
+                  
+                  <button
+                    onClick={() => handleDeleteTask(selectedTask.id)}
+                    className="flex-1 px-3 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition text-sm"
+                  >
+                    🗑️ Удалить
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -1418,19 +1475,76 @@ function DashboardContent() {
             
             {/* Sticky Footer */}
             <div className="flex gap-2 p-4 pt-3 border-t border-gray-100 flex-shrink-0">
-              <button
-                onClick={() => setEditingEvent(selectedEvent)}
-                className="flex-1 px-3 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition text-sm"
-              >
-                ✏️ Редактировать
-              </button>
-              
-              <button
-                onClick={() => handleDeleteEvent(selectedEvent.id)}
-                className="flex-1 px-3 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition text-sm"
-              >
-                🗑️ Удалить
-              </button>
+              {/* Approval buttons for partner */}
+              {selectedEvent.requiresApproval && 
+               selectedEvent.approvalStatus === 'pending' && 
+               selectedEvent.createdBy.id !== user?.id && (
+                <>
+                  <button
+                    onClick={async () => {
+                      const token = localStorage.getItem('token');
+                      try {
+                        const res = await fetch(`/api/events/${selectedEvent.id}/approve`, {
+                          method: 'POST',
+                          headers: { 'Authorization': `Bearer ${token}` },
+                        });
+                        if (res.ok) {
+                          setSelectedEvent(null);
+                          loadData();
+                          setToast({ message: 'Событие подтверждено!', type: 'success' });
+                        }
+                      } catch (err) {
+                        setToast({ message: 'Ошибка подтверждения', type: 'error' });
+                      }
+                    }}
+                    className="flex-1 px-3 py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 transition text-sm"
+                  >
+                    ✅ Подтвердить
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const token = localStorage.getItem('token');
+                      try {
+                        const res = await fetch(`/api/events/${selectedEvent.id}/decline`, {
+                          method: 'POST',
+                          headers: { 'Authorization': `Bearer ${token}` },
+                        });
+                        if (res.ok) {
+                          setSelectedEvent(null);
+                          loadData();
+                          setToast({ message: 'Событие отклонено', type: 'info' });
+                        }
+                      } catch (err) {
+                        setToast({ message: 'Ошибка отклонения', type: 'error' });
+                      }
+                    }}
+                    className="flex-1 px-3 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition text-sm"
+                  >
+                    ❌ Отклонить
+                  </button>
+                </>
+              )}
+
+              {/* Regular action buttons */}
+              {(!selectedEvent.requiresApproval || 
+                selectedEvent.approvalStatus !== 'pending' || 
+                selectedEvent.createdBy.id === user?.id) && (
+                <>
+                  <button
+                    onClick={() => setEditingEvent(selectedEvent)}
+                    className="flex-1 px-3 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition text-sm"
+                  >
+                    ✏️ Редактировать
+                  </button>
+                  
+                  <button
+                    onClick={() => handleDeleteEvent(selectedEvent.id)}
+                    className="flex-1 px-3 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition text-sm"
+                  >
+                    🗑️ Удалить
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

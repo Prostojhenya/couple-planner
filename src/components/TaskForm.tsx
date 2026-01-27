@@ -12,6 +12,7 @@ export default function TaskForm({ onSubmit, onCancel, initialData }: TaskFormPr
   const [title, setTitle] = useState(initialData?.title || '');
   const [description, setDescription] = useState(initialData?.description || '');
   const [isShared, setIsShared] = useState(initialData?.isShared || false);
+  const [requiresApproval, setRequiresApproval] = useState(initialData?.requiresApproval || false);
   const [priority, setPriority] = useState(initialData?.priority || 'medium');
   const [assigneeType, setAssigneeType] = useState(initialData?.assigneeType || 'me');
   const [dueAt, setDueAt] = useState(
@@ -24,6 +25,7 @@ export default function TaskForm({ onSubmit, onCancel, initialData }: TaskFormPr
       title,
       description,
       isShared,
+      requiresApproval,
       priority,
       assigneeType,
       dueAt: dueAt || undefined,
@@ -209,6 +211,19 @@ export default function TaskForm({ onSubmit, onCancel, initialData }: TaskFormPr
         />
         <label htmlFor="isShared" className="text-xs font-medium text-gray-900 cursor-pointer">
           Общая задача (видна партнёру)
+        </label>
+      </div>
+
+      <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-xl">
+        <input
+          type="checkbox"
+          id="requiresApproval"
+          checked={requiresApproval}
+          onChange={(e) => setRequiresApproval(e.target.checked)}
+          className="w-4 h-4 text-amber-600 rounded focus:ring-2 focus:ring-amber-500"
+        />
+        <label htmlFor="requiresApproval" className="text-xs font-medium text-gray-900 cursor-pointer">
+          ⏳ Требует подтверждения партнёра
         </label>
       </div>
 

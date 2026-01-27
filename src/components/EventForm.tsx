@@ -18,6 +18,7 @@ export default function EventForm({ onSubmit, onCancel, initialData }: EventForm
     initialData?.endAt ? new Date(initialData.endAt).toISOString().slice(0, 16) : ''
   );
   const [allDay, setAllDay] = useState(initialData?.allDay || false);
+  const [requiresApproval, setRequiresApproval] = useState(initialData?.requiresApproval || false);
   const [location, setLocation] = useState(initialData?.location || '');
   const [participants, setParticipants] = useState(initialData?.participants || 'both');
 
@@ -36,6 +37,7 @@ export default function EventForm({ onSubmit, onCancel, initialData }: EventForm
       startAt,
       endAt,
       allDay,
+      requiresApproval,
       location: location || undefined,
       participants,
     });
@@ -179,6 +181,19 @@ export default function EventForm({ onSubmit, onCancel, initialData }: EventForm
           />
           <label htmlFor="allDay" className="text-xs font-medium text-gray-900 cursor-pointer">
             Весь день
+          </label>
+        </div>
+
+        <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-xl">
+          <input
+            type="checkbox"
+            id="requiresApproval"
+            checked={requiresApproval}
+            onChange={(e) => setRequiresApproval(e.target.checked)}
+            className="w-4 h-4 text-amber-600 rounded focus:ring-2 focus:ring-amber-500"
+          />
+          <label htmlFor="requiresApproval" className="text-xs font-medium text-gray-900 cursor-pointer">
+            ⏳ Требует подтверждения партнёра
           </label>
         </div>
       </div>
