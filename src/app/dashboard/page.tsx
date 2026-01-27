@@ -9,6 +9,9 @@ import TaskForm from '@/components/TaskForm';
 import EventForm from '@/components/EventForm';
 import PushNotificationSetup from '@/components/PushNotificationSetup';
 import GroupClusterIcon from '@/components/GroupClusterIcon';
+import Toast from '@/components/Toast';
+import ConfirmDialog from '@/components/ConfirmDialog';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 // Отключаем статическую генерацию для этой страницы
 export const dynamic = 'force-dynamic';
@@ -33,6 +36,9 @@ function DashboardContent() {
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [editingEvent, setEditingEvent] = useState<any>(null);
   const [editingTask, setEditingTask] = useState<any>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{ title: string; message: string; onConfirm: () => void } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -122,23 +128,38 @@ function DashboardContent() {
   };
 
   const handleDeleteTask = async (taskId: string) => {
-    if (!confirm('Удалить задачу?')) return;
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`/api/tasks/${taskId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.ok) {
-        setSelectedTask(null);
-        loadData();
+    setConfirmDialog({
+      title: 'Удалить задачу?',
+      message: 'Это действие нельзя отменить.',
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        setIsSubmitting(true);
+        const token = localStorage.getItem('token');
+        try {
+          const res = await fetch(`/api/tasks/${taskId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` },
+          });
+          if (res.ok) {
+            setSelectedTask(null);
+            loadData();
+            setToast({ message: 'Задача удалена', type: 'success' });
+          } else {
+            const error = await res.json();
+            setToast({ message: error.error || 'Ошибка удаления', type: 'error' });
+          }
+        } catch (err) {
+          console.error('Ошибка удаления задачи', err);
+          setToast({ message: 'Ошибка удаления задачи', type: 'error' });
+        } finally {
+          setIsSubmitting(false);
+        }
       }
-    } catch (err) {
-      console.error('Ошибка удаления задачи', err);
-    }
+    });
   };
 
   const handleUpdateTask = async (taskId: string, data: any) => {
+    setIsSubmitting(true);
     const token = localStorage.getItem('token');
     try {
       const res = await fetch(`/api/tasks/${taskId}`, {
@@ -154,18 +175,21 @@ function DashboardContent() {
         setEditingTask(null);
         setSelectedTask(null);
         loadData();
-        alert('Задача обновлена!');
+        setToast({ message: 'Задача обновлена!', type: 'success' });
       } else {
         const error = await res.json();
-        alert(`Ошибка: ${error.error}`);
+        setToast({ message: error.error || 'Ошибка обновления', type: 'error' });
       }
     } catch (err) {
       console.error('Ошибка обновления задачи', err);
-      alert('Ошибка обновления задачи');
+      setToast({ message: 'Ошибка обновления задачи', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleCreateTask = async (data: any) => {
+    setIsSubmitting(true);
     const token = localStorage.getItem('token');
     try {
       const res = await fetch('/api/tasks', {
@@ -179,13 +203,21 @@ function DashboardContent() {
       if (res.ok) {
         setShowTaskForm(false);
         loadData();
+        setToast({ message: 'Задача создана!', type: 'success' });
+      } else {
+        const error = await res.json();
+        setToast({ message: error.error || 'Ошибка создания', type: 'error' });
       }
     } catch (err) {
       console.error('Ошибка создания задачи', err);
+      setToast({ message: 'Ошибка создания задачи', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleCreateEvent = async (data: any) => {
+    setIsSubmitting(true);
     const token = localStorage.getItem('token');
     console.log('Создание события с данными:', data);
     
@@ -206,15 +238,17 @@ function DashboardContent() {
         console.log('Событие создано:', result);
         setShowEventForm(false);
         loadData();
-        alert('Событие успешно создано!');
+        setToast({ message: 'Событие создано!', type: 'success' });
       } else {
         const error = await res.json();
         console.error('Ошибка от сервера:', error);
-        alert(`Ошибка создания события: ${error.error || 'Неизвестная ошибка'}`);
+        setToast({ message: error.error || 'Ошибка создания события', type: 'error' });
       }
     } catch (err) {
       console.error('Ошибка создания события', err);
-      alert('Ошибка создания события. Проверьте подключение к интернету.');
+      setToast({ message: 'Ошибка создания события', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -267,28 +301,38 @@ function DashboardContent() {
   };
 
   const handleDeleteEvent = async (eventId: string) => {
-    if (!confirm('Удалить событие?')) return;
-    const token = localStorage.getItem('token');
-    try {
-      const res = await fetch(`/api/events/${eventId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
-      });
-      if (res.ok) {
-        setSelectedEvent(null);
-        loadData();
-        alert('Событие удалено');
-      } else {
-        const error = await res.json();
-        alert(`Ошибка: ${error.error}`);
+    setConfirmDialog({
+      title: 'Удалить событие?',
+      message: 'Это действие нельзя отменить.',
+      onConfirm: async () => {
+        setConfirmDialog(null);
+        setIsSubmitting(true);
+        const token = localStorage.getItem('token');
+        try {
+          const res = await fetch(`/api/events/${eventId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` },
+          });
+          if (res.ok) {
+            setSelectedEvent(null);
+            loadData();
+            setToast({ message: 'Событие удалено', type: 'success' });
+          } else {
+            const error = await res.json();
+            setToast({ message: error.error || 'Ошибка удаления', type: 'error' });
+          }
+        } catch (err) {
+          console.error('Ошибка удаления события', err);
+          setToast({ message: 'Ошибка удаления события', type: 'error' });
+        } finally {
+          setIsSubmitting(false);
+        }
       }
-    } catch (err) {
-      console.error('Ошибка удаления события', err);
-      alert('Ошибка удаления события');
-    }
+    });
   };
 
   const handleUpdateEvent = async (eventId: string, data: any) => {
+    setIsSubmitting(true);
     const token = localStorage.getItem('token');
     try {
       const res = await fetch(`/api/events/${eventId}`, {
@@ -304,14 +348,16 @@ function DashboardContent() {
         setEditingEvent(null);
         setSelectedEvent(null);
         loadData();
-        alert('Событие обновлено!');
+        setToast({ message: 'Событие обновлено!', type: 'success' });
       } else {
         const error = await res.json();
-        alert(`Ошибка: ${error.error}`);
+        setToast({ message: error.error || 'Ошибка обновления', type: 'error' });
       }
     } catch (err) {
       console.error('Ошибка обновления события', err);
-      alert('Ошибка обновления события');
+      setToast({ message: 'Ошибка обновления события', type: 'error' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1068,10 +1114,16 @@ function DashboardContent() {
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden">
               <div className="p-4">
-                <TaskForm
-                  onSubmit={handleCreateTask}
-                  onCancel={() => setShowTaskForm(false)}
-                />
+                {isSubmitting ? (
+                  <div className="py-20">
+                    <LoadingSpinner size="lg" text="Создание..." />
+                  </div>
+                ) : (
+                  <TaskForm
+                    onSubmit={handleCreateTask}
+                    onCancel={() => setShowTaskForm(false)}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -1098,10 +1150,16 @@ function DashboardContent() {
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden">
               <div className="p-4">
-                <EventForm
-                  onSubmit={handleCreateEvent}
-                  onCancel={() => setShowEventForm(false)}
-                />
+                {isSubmitting ? (
+                  <div className="py-20">
+                    <LoadingSpinner size="lg" text="Создание..." />
+                  </div>
+                ) : (
+                  <EventForm
+                    onSubmit={handleCreateEvent}
+                    onCancel={() => setShowEventForm(false)}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -1226,14 +1284,20 @@ function DashboardContent() {
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden">
               <div className="p-4">
-                <TaskForm
-                  initialData={editingTask}
-                  onSubmit={(data) => handleUpdateTask(editingTask.id, data)}
-                  onCancel={() => {
-                    setEditingTask(null);
-                    setSelectedTask(null);
-                  }}
-                />
+                {isSubmitting ? (
+                  <div className="py-20">
+                    <LoadingSpinner size="lg" text="Сохранение..." />
+                  </div>
+                ) : (
+                  <TaskForm
+                    initialData={editingTask}
+                    onSubmit={(data) => handleUpdateTask(editingTask.id, data)}
+                    onCancel={() => {
+                      setEditingTask(null);
+                      setSelectedTask(null);
+                    }}
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -1378,18 +1442,46 @@ function DashboardContent() {
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden">
               <div className="p-4">
-                <EventForm
-                  initialData={editingEvent}
-                  onSubmit={(data) => handleUpdateEvent(editingEvent.id, data)}
-                  onCancel={() => {
-                    setEditingEvent(null);
-                    setSelectedEvent(null);
-                  }}
-                />
+                {isSubmitting ? (
+                  <div className="py-20">
+                    <LoadingSpinner size="lg" text="Сохранение..." />
+                  </div>
+                ) : (
+                  <EventForm
+                    initialData={editingEvent}
+                    onSubmit={(data) => handleUpdateEvent(editingEvent.id, data)}
+                    onCancel={() => {
+                      setEditingEvent(null);
+                      setSelectedEvent(null);
+                    }}
+                  />
+                )}
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      {/* Confirm Dialog */}
+      {confirmDialog && (
+        <ConfirmDialog
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          confirmText="Удалить"
+          cancelText="Отмена"
+          type="danger"
+          onConfirm={confirmDialog.onConfirm}
+          onCancel={() => setConfirmDialog(null)}
+        />
       )}
     </div>
   );
