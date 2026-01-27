@@ -389,9 +389,12 @@ function DashboardContent() {
         <div className="relative z-10">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl border-2 border-white/40 shadow-lg">
+              <button
+                onClick={() => setActiveScreen('settings')}
+                className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl border-2 border-white/40 shadow-lg hover:bg-white/30 active:scale-95 transition-all"
+              >
                 💑
-              </div>
+              </button>
             </div>
             <div className="flex gap-2 items-center relative">
               {loading && (
