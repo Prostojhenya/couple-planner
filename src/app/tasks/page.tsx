@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { FloatingNavBar } from '@/components/FloatingNavBar';
 import { useRouter } from 'next/navigation';
 import TaskCard from '@/components/TaskCard';
 import TaskForm from '@/components/TaskForm';

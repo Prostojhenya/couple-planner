@@ -25,6 +25,13 @@ model User {
   sentInvites       Invite[]
   addedShoppingItems     ShoppingItem[] @relation("ShoppingItemAddedBy")
   purchasedShoppingItems ShoppingItem[] @relation("ShoppingItemPurchasedBy")
+  
+  // Visual Mind-Map relations
+  hubs              Hub[]           @relation("HubOwner")
+  ownedClusters     MindMapCluster[] @relation("ClusterOwner")
+  clusterMemberships ClusterMember[] @relation("ClusterMembership")
+  createdInvites    InviteLink[]    @relation("InviteCreator")
+  usedInvites       InviteLink[]    @relation("InviteUser")
 
   @@map("users")
 }
@@ -241,4 +248,104 @@ model Streak {
   updatedAt     DateTime @updatedAt
 
   @@map("streaks")
+}
+
+// ============================================
+// Visual Mind-Map Task System Models
+// ============================================
+
+model Hub {
+  id            String    @id @default(cuid())
+  userId        String
+  contextType   String    // 'personal' | 'shared' | 'group'
+  participants  String[]  // массив инициалов
+  clusters      MindMapCluster[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  user          User      @relation("HubOwner", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@map("hubs")
+}
+
+model MindMapCluster {
+  id            String          @id @default(cuid())
+  hubId         String
+  ownerId       String
+  type          String          // 'task' | 'event' | 'shop' | 'custom'
+  positionX     Float
+  positionY     Float
+  isExpanded    Boolean         @default(false)
+  tasks         MindMapTask[]
+  members       ClusterMember[]
+  inviteLinks   InviteLink[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  hub           Hub             @relation(fields: [hubId], references: [id], onDelete: Cascade)
+  owner         User            @relation("ClusterOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  
+  @@index([hubId])
+  @@index([ownerId])
+  @@map("mindmap_clusters")
+}
+
+model MindMapTask {
+  id            String    @id @default(cuid())
+  clusterId     String
+  parentTaskId  String?   // для вложенности
+  title         String
+  completed     Boolean   @default(false)
+  icon          String    @default("check")
+  positionX     Float?    // позиция при раскрытии кластера
+  positionY     Float?
+  order         Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  cluster       MindMapCluster   @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  parent        MindMapTask?     @relation("TaskChildren", fields: [parentTaskId], references: [id], onDelete: Cascade)
+  children      MindMapTask[]    @relation("TaskChildren")
+  
+  @@index([clusterId])
+  @@index([parentTaskId])
+  @@map("mindmap_tasks")
+}
+
+model ClusterMember {
+  id            String       @id @default(cuid())
+  clusterId     String
+  userId        String
+  role          String       // 'admin' | 'user' | 'viewer'
+  permissions   String[]     // массив разрешений
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
+  cluster       MindMapCluster      @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  user          User         @relation("ClusterMembership", fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([clusterId, userId])
+  @@index([clusterId])
+  @@index([userId])
+  @@map("cluster_members")
+}
+
+model InviteLink {
+  id            String    @id @default(cuid())
+  clusterId     String
+  token         String    @unique
+  expiresAt     DateTime
+  createdById   String
+  usedBy        String?
+  usedAt        DateTime?
+  createdAt     DateTime  @default(now())
+  
+  cluster       MindMapCluster   @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  createdBy     User      @relation("InviteCreator", fields: [createdById], references: [id])
+  user          User?     @relation("InviteUser", fields: [usedBy], references: [id])
+  
+  @@index([clusterId])
+  @@index([token])
+  @@map("invite_links")
 }
