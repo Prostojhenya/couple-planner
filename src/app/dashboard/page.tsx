@@ -104,6 +104,14 @@ export default function DashboardPage() {
     setPendingClusterPosition(null);
   };
 
+  const handleClusterMove = (clusterId: string, position: { x: number; y: number }) => {
+    setClusters(prev =>
+      prev.map(c =>
+        c.id === clusterId ? { ...c, position } : c
+      )
+    );
+  };
+
   const handleInvite = () => {
     console.log('Invite members');
   };
@@ -121,6 +129,7 @@ export default function DashboardPage() {
         onClusterTap={handleClusterTap}
         onClusterLongPress={handleClusterLongPress}
         onCreateCluster={handleCreateCluster}
+        onClusterMove={handleClusterMove}
       />
 
       <CreateClusterDialog
