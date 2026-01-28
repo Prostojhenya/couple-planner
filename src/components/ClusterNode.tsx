@@ -11,6 +11,9 @@ interface Cluster {
   members: Array<{ id: string; name: string; role: string; avatar?: string }>;
   isExpanded: boolean;
   tasks?: Array<{ id: string; status: string }>;
+  name?: string;
+  size?: number;
+  color?: string;
 }
 
 interface ClusterNodeProps {
@@ -75,13 +78,26 @@ export function ClusterNode({ cluster, onTap, onLongPress }: ClusterNodeProps) {
       onMouseLeave={handleTouchEnd}
     >
       <div
-        className={`w-24 h-24 rounded-full bg-white shadow-md flex flex-col items-center justify-center transition-transform ${
+        className={`rounded-full shadow-md flex flex-col items-center justify-center transition-transform ${
           isPressed ? 'scale-95' : 'scale-100'
         } ${cluster.isExpanded ? 'ring-4 ring-blue-400' : ''}`}
+        style={{
+          width: cluster.size || 96,
+          height: cluster.size || 96,
+          backgroundColor: cluster.color || '#FFFFFF',
+        }}
       >
-        {getIcon()}
-        <div className="text-gray-900 text-xl font-bold mt-1">{cluster.count}</div>
-        <div className="text-gray-500 text-[10px] font-medium">{getLabel()}</div>
+        {cluster.name ? (
+          <div className="text-white text-sm font-bold text-center px-2">
+            {cluster.name}
+          </div>
+        ) : (
+          <>
+            {getIcon()}
+            <div className="text-gray-900 text-xl font-bold mt-1">{cluster.count}</div>
+            <div className="text-gray-500 text-[10px] font-medium">{getLabel()}</div>
+          </>
+        )}
       </div>
 
       {/* Member avatars */}
