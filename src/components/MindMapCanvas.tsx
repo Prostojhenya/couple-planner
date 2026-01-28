@@ -106,19 +106,36 @@ export function MindMapCanvas({
 
   const handleTouchMove = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
-      // Pinch zoom
+      // Pinch zoom with focal point
       e.preventDefault();
       const touch1 = e.touches[0];
       const touch2 = e.touches[1];
+      
+      // Calculate current distance
       const distance = Math.hypot(
         touch2.clientX - touch1.clientX,
         touch2.clientY - touch1.clientY
       );
 
+      // Calculate focal point (center between two fingers)
+      const focalX = (touch1.clientX + touch2.clientX) / 2;
+      const focalY = (touch1.clientY + touch2.clientY) / 2;
+
       if (lastTouchDistance.current > 0) {
         const delta = distance - lastTouchDistance.current;
-        const newScale = Math.max(0.5, Math.min(3, scale + delta * 0.01));
+        const scaleChange = delta * 0.01;
+        const newScale = Math.max(0.5, Math.min(3, scale + scaleChange));
+        
+        // Calculate the point in canvas coordinates before zoom
+        const canvasX = (focalX - offset.x) / scale;
+        const canvasY = (focalY - offset.y) / scale;
+        
+        // Calculate new offset to keep focal point stationary
+        const newOffsetX = focalX - canvasX * newScale;
+        const newOffsetY = focalY - canvasY * newScale;
+        
         setScale(newScale);
+        setOffset({ x: newOffsetX, y: newOffsetY });
       }
 
       lastTouchDistance.current = distance;
@@ -173,12 +190,30 @@ export function MindMapCanvas({
     lastTouchDistance.current = 0;
   };
 
-  // Mouse wheel zoom
+  // Mouse wheel zoom with focal point
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
+    
     const delta = -e.deltaY * 0.001;
     const newScale = Math.max(0.5, Math.min(3, scale + delta));
+    
+    // Get mouse position
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    // Calculate the point in canvas coordinates before zoom
+    const canvasX = (mouseX - offset.x) / scale;
+    const canvasY = (mouseY - offset.y) / scale;
+    
+    // Calculate new offset to keep mouse point stationary
+    const newOffsetX = mouseX - canvasX * newScale;
+    const newOffsetY = mouseY - canvasY * newScale;
+    
     setScale(newScale);
+    setOffset({ x: newOffsetX, y: newOffsetY });
   };
 
   useEffect(() => {
@@ -329,13 +364,47 @@ export function MindMapCanvas({
       {/* Zoom controls */}
       <div className="absolute bottom-20 right-4 flex flex-col gap-2 z-50">
         <button
-          onClick={() => setScale(Math.min(3, scale + 0.2))}
+          onClick={() => {
+            const newScale = Math.min(3, scale + 0.2);
+            const rect = containerRef.current?.getBoundingClientRect();
+            if (!rect) return;
+            
+            // Zoom to center of screen
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const canvasX = (centerX - offset.x) / scale;
+            const canvasY = (centerY - offset.y) / scale;
+            
+            const newOffsetX = centerX - canvasX * newScale;
+            const newOffsetY = centerY - canvasY * newScale;
+            
+            setScale(newScale);
+            setOffset({ x: newOffsetX, y: newOffsetY });
+          }}
           className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-xl font-bold hover:bg-gray-100"
         >
           +
         </button>
         <button
-          onClick={() => setScale(Math.max(0.5, scale - 0.2))}
+          onClick={() => {
+            const newScale = Math.max(0.5, scale - 0.2);
+            const rect = containerRef.current?.getBoundingClientRect();
+            if (!rect) return;
+            
+            // Zoom to center of screen
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const canvasX = (centerX - offset.x) / scale;
+            const canvasY = (centerY - offset.y) / scale;
+            
+            const newOffsetX = centerX - canvasX * newScale;
+            const newOffsetY = centerY - canvasY * newScale;
+            
+            setScale(newScale);
+            setOffset({ x: newOffsetX, y: newOffsetY });
+          }}
           className="w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center text-xl font-bold hover:bg-gray-100"
         >
           −
