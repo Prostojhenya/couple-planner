@@ -19,9 +19,9 @@ const COLORS = [
 ];
 
 const SIZES = [
-  { name: 'Маленький', value: 80 },
-  { name: 'Средний', value: 96 },
-  { name: 'Большой', value: 112 },
+  { name: 'S', value: 80 },
+  { name: 'M', value: 96 },
+  { name: 'L', value: 112 },
 ];
 
 export function CreateClusterDialog({ isOpen, onClose, onCreate }: CreateClusterDialogProps) {
@@ -45,20 +45,20 @@ export function CreateClusterDialog({ isOpen, onClose, onCreate }: CreateCluster
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 my-4">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-4 mt-4 mb-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Новый кластер</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-gray-900">Новый кластер</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition"
+            className="p-1 hover:bg-gray-100 rounded-full transition"
           >
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
 
         {/* Name Input */}
-        <div className="mb-6">
+        <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Название
           </label>
@@ -66,47 +66,46 @@ export function CreateClusterDialog({ isOpen, onClose, onCreate }: CreateCluster
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Например: Работа, Дом, Хобби..."
-            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Работа, Дом, Хобби..."
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base"
             autoFocus
           />
         </div>
 
         {/* Size Selection */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Размер
           </label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             {SIZES.map((s) => (
               <button
                 key={s.value}
                 onClick={() => setSize(s.value)}
-                className={`p-3 rounded-xl border-2 transition ${
+                className={`p-2 rounded-lg border-2 transition text-sm font-medium ${
                   size === s.value
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 text-gray-700 hover:border-gray-300'
                 }`}
               >
-                <div className="text-sm font-medium text-gray-900">{s.name}</div>
-                <div className="text-xs text-gray-500 mt-1">{s.value}px</div>
+                {s.name}
               </button>
             ))}
           </div>
         </div>
 
         {/* Color Selection */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Цвет
           </label>
-          <div className="grid grid-cols-6 gap-3">
+          <div className="grid grid-cols-6 gap-2">
             {COLORS.map((c) => (
               <button
                 key={c.value}
                 onClick={() => setColor(c.value)}
-                className={`w-12 h-12 rounded-full transition ${
-                  color === c.value ? 'ring-4 ring-offset-2 ring-blue-500' : ''
+                className={`w-10 h-10 rounded-full transition ${
+                  color === c.value ? 'ring-4 ring-offset-1 ring-blue-500' : ''
                 }`}
                 style={{ backgroundColor: c.value }}
                 title={c.name}
@@ -115,34 +114,17 @@ export function CreateClusterDialog({ isOpen, onClose, onCreate }: CreateCluster
           </div>
         </div>
 
-        {/* Preview */}
-        <div className="mb-6 p-4 bg-gray-50 rounded-xl">
-          <div className="text-xs text-gray-500 mb-2 text-center">Предпросмотр</div>
-          <div className="flex justify-center">
-            <div
-              className="rounded-full shadow-lg flex items-center justify-center text-white font-bold"
-              style={{
-                width: size,
-                height: size,
-                backgroundColor: color,
-              }}
-            >
-              {name || '?'}
-            </div>
-          </div>
-        </div>
-
         {/* Actions */}
-        <div className="flex gap-3">
+        <div className="flex gap-2 mt-4">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-xl hover:bg-gray-50 transition font-medium"
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition font-medium text-sm"
           >
             Отмена
           </button>
           <button
             onClick={handleCreate}
-            className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition font-medium"
+            className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition font-medium text-sm"
           >
             Создать
           </button>
