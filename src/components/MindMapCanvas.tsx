@@ -43,6 +43,12 @@ export function MindMapCanvas({
   const [isPanning, setIsPanning] = useState(false);
   const [lastPanPosition, setLastPanPosition] = useState<Position>({ x: 0, y: 0 });
   const lastTouchDistance = useRef<number>(0);
+  
+  // Cluster creation state
+  const [isCreatingCluster, setIsCreatingCluster] = useState(false);
+  const [newClusterPosition, setNewClusterPosition] = useState<Position | null>(null);
+  const longPressTimer = useRef<NodeJS.Timeout>();
+  const touchStartPosition = useRef<Position>({ x: 0, y: 0 });
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -59,6 +65,13 @@ export function MindMapCanvas({
   }, []);
 
   // Touch handlers for pinch-to-zoom and pan
+  const isOverHub = (x: number, y: number): boolean => {
+    const hubRadius = 64; // 128px / 2
+    const dx = x - hubPosition.x;
+    const dy = y - hubPosition.y;
+    return Math.sqrt(dx * dx + dy * dy) <= hubRadius;
+  };
+
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
       // Pinch gesture
@@ -70,12 +83,24 @@ export function MindMapCanvas({
       );
       lastTouchDistance.current = distance;
     } else if (e.touches.length === 1) {
-      // Pan gesture
-      setIsPanning(true);
-      setLastPanPosition({
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY,
-      });
+      const touch = e.touches[0];
+      const touchX = touch.clientX;
+      const touchY = touch.clientY;
+      
+      touchStartPosition.current = { x: touchX, y: touchY };
+
+      // Check if touching the hub
+      if (isOverHub(touchX, touchY)) {
+        // Start long-press timer for cluster creation
+        longPressTimer.current = setTimeout(() => {
+          setIsCreatingCluster(true);
+          setNewClusterPosition({ x: touchX, y: touchY });
+        }, 500); // 500ms long press
+      } else {
+        // Start panning
+        setIsPanning(true);
+        setLastPanPosition({ x: touchX, y: touchY });
+      }
     }
   };
 
@@ -97,26 +122,53 @@ export function MindMapCanvas({
       }
 
       lastTouchDistance.current = distance;
-    } else if (e.touches.length === 1 && isPanning) {
-      // Pan
-      e.preventDefault();
+    } else if (e.touches.length === 1) {
       const touch = e.touches[0];
-      const deltaX = touch.clientX - lastPanPosition.x;
-      const deltaY = touch.clientY - lastPanPosition.y;
+      const touchX = touch.clientX;
+      const touchY = touch.clientY;
 
-      setOffset({
-        x: offset.x + deltaX,
-        y: offset.y + deltaY,
-      });
+      // Check if moved significantly (more than 10px) - cancel long press
+      const dx = touchX - touchStartPosition.current.x;
+      const dy = touchY - touchStartPosition.current.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      
+      if (distance > 10 && longPressTimer.current) {
+        clearTimeout(longPressTimer.current);
+      }
 
-      setLastPanPosition({
-        x: touch.clientX,
-        y: touch.clientY,
-      });
+      if (isCreatingCluster) {
+        // Update new cluster position while dragging
+        e.preventDefault();
+        setNewClusterPosition({ x: touchX, y: touchY });
+      } else if (isPanning) {
+        // Pan the canvas
+        e.preventDefault();
+        const deltaX = touchX - lastPanPosition.x;
+        const deltaY = touchY - lastPanPosition.y;
+
+        setOffset({
+          x: offset.x + deltaX,
+          y: offset.y + deltaY,
+        });
+
+        setLastPanPosition({ x: touchX, y: touchY });
+      }
     }
   };
 
   const handleTouchEnd = () => {
+    // Clear long press timer
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+    }
+
+    // If was creating cluster, finalize it
+    if (isCreatingCluster && newClusterPosition) {
+      onCreateCluster(newClusterPosition);
+      setIsCreatingCluster(false);
+      setNewClusterPosition(null);
+    }
+
     setIsPanning(false);
     lastTouchDistance.current = 0;
   };
@@ -237,6 +289,41 @@ export function MindMapCanvas({
             onLongPress={() => onClusterLongPress(cluster.id)}
           />
         ))}
+
+        {/* Preview of new cluster being created */}
+        {isCreatingCluster && newClusterPosition && (
+          <div
+            className="absolute transform -translate-x-1/2 -translate-y-1/2 z-30"
+            style={{ 
+              left: newClusterPosition.x, 
+              top: newClusterPosition.y,
+              pointerEvents: 'none'
+            }}
+          >
+            <div className="w-24 h-24 rounded-full bg-blue-400 opacity-50 flex items-center justify-center animate-pulse">
+              <span className="text-white text-2xl">+</span>
+            </div>
+          </div>
+        )}
+
+        {/* Connection line while creating cluster */}
+        {isCreatingCluster && newClusterPosition && (
+          <svg
+            className="absolute inset-0 pointer-events-none z-20"
+            style={{ width: '100%', height: '100%' }}
+          >
+            <line
+              x1={hubPosition.x}
+              y1={hubPosition.y}
+              x2={newClusterPosition.x}
+              y2={newClusterPosition.y}
+              stroke="#3B82F6"
+              strokeWidth="2"
+              strokeDasharray="5,5"
+              opacity="0.5"
+            />
+          </svg>
+        )}
       </div>
 
       {/* Zoom controls */}
