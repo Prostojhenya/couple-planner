@@ -8,7 +8,7 @@ export function FloatingNavBar() {
   const router = useRouter();
 
   const navItems = [
-    { icon: Map, label: 'Map', path: '/dashboard' },
+    { icon: Map, label: 'Map', path: '/map' },
     { icon: CheckSquare, label: 'Tasks', path: '/tasks' },
     { icon: Inbox, label: 'Inbox', path: '/inbox' },
     { icon: Calendar, label: 'Calendar', path: '/calendar' },

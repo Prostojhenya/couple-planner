@@ -61,13 +61,28 @@
    - Решение проблем
    - FAQ
 
+10. **[VERCEL_FIX_GUIDE.md](VERCEL_FIX_GUIDE.md)** - исправление ошибок на Vercel
+    - Применение миграций
+    - Настройка переменных окружения
+    - Решение API ошибок
+
+11. **[FIX_401_LOGIN.md](FIX_401_LOGIN.md)** - исправление ошибки входа
+    - Создание пользователей
+    - Регистрация через UI
+    - Скрипт создания пользователя
+
+12. **[VERCEL_401_SUMMARY.md](VERCEL_401_SUMMARY.md)** - краткая сводка по 401
+    - Быстрое решение
+    - Причины ошибки
+    - Следующие шаги
+
 ### 📋 Справочная информация
-10. **[FILES_CREATED.md](FILES_CREATED.md)** - список файлов
+13. **[FILES_CREATED.md](FILES_CREATED.md)** - список файлов
     - Новые файлы
     - Изменённые файлы
     - Статистика
 
-11. **[SUMMARY_FOR_USER.md](SUMMARY_FOR_USER.md)** - краткое резюме
+14. **[SUMMARY_FOR_USER.md](SUMMARY_FOR_USER.md)** - краткое резюме
     - Что сделано
     - Что дальше
     - Структура проекта
@@ -80,6 +95,10 @@
 - **[APPLY_CHANGES.sh](APPLY_CHANGES.sh)** - для Linux/Mac
 - **[APPLY_CHANGES.bat](APPLY_CHANGES.bat)** - для Windows
 
+### Создание пользователей
+- **[create-production-user.js](create-production-user.js)** - создать пользователя в production БД
+- **[create-test-user.js](create-test-user.js)** - создать тестового пользователя локально
+
 **Использование:**
 ```bash
 # Linux/Mac
@@ -87,6 +106,9 @@ bash APPLY_CHANGES.sh
 
 # Windows
 APPLY_CHANGES.bat
+
+# Создать production пользователя
+DATABASE_URL="your_url" node create-production-user.js
 ```
 
 ---
@@ -115,7 +137,10 @@ APPLY_CHANGES.bat
 │   └── CHECKLIST.md               ← Чек-лист
 │
 ├── 🆘 Помощь
-│   └── UPGRADE_TO_GROUPS.md       ← Решение проблем
+│   ├── UPGRADE_TO_GROUPS.md       ← Решение проблем
+│   ├── VERCEL_FIX_GUIDE.md        ← Vercel ошибки
+│   ├── FIX_401_LOGIN.md           ← Ошибка входа
+│   └── VERCEL_401_SUMMARY.md      ← Краткая сводка
 │
 ├── 📋 Справка
 │   ├── FILES_CREATED.md           ← Список файлов
@@ -124,7 +149,9 @@ APPLY_CHANGES.bat
 │
 └── 🛠️ Скрипты
     ├── APPLY_CHANGES.sh           ← Linux/Mac
-    └── APPLY_CHANGES.bat          ← Windows
+    ├── APPLY_CHANGES.bat          ← Windows
+    ├── create-production-user.js  ← Production пользователь
+    └── create-test-user.js        ← Тестовый пользователь
 ```
 
 ---
@@ -158,9 +185,9 @@ APPLY_CHANGES.bat
 | Визуальные изменения | 1 | 5 мин |
 | Технические детали | 2 | 50 мин |
 | Проверка | 1 | 30 мин |
-| Помощь | 1 | 15 мин |
+| Помощь | 4 | 30 мин |
 | Справка | 3 | 15 мин |
-| **Всего** | **12** | **~2.5 часа** |
+| **Всего** | **15** | **~3 часа** |
 
 ---
 
@@ -209,6 +236,11 @@ APPLY_CHANGES.bat
 
 ### Возникла проблема
 → `UPGRADE_TO_GROUPS.md` (раздел "Проблемы?")
+→ `VERCEL_FIX_GUIDE.md` (для Vercel)
+→ `FIX_401_LOGIN.md` (ошибка входа)
+
+### Ошибка 401 при входе
+→ `FIX_401_LOGIN.md` или `VERCEL_401_SUMMARY.md`
 
 ### Нужны технические детали
 → `CHANGES_SUMMARY.md` или `MIGRATION_GUIDE.md`
@@ -234,5 +266,5 @@ APPLY_CHANGES.bat
 
 💜 **TwoDo v2.0.0 - Групповой планер**
 **Дата**: 28 января 2026
-**Документов**: 12
-**Скриптов**: 2
+**Документов**: 15
+**Скриптов**: 4

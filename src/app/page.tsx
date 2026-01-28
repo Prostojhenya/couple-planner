@@ -8,10 +8,10 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    // Проверяем токен и редиректим на dashboard если пользователь залогинен
+    // Проверяем токен и редиректим на map если пользователь залогинен
     const token = localStorage.getItem('token');
     if (token) {
-      router.push('/dashboard');
+      router.push('/map');
     }
   }, [router]);
 
