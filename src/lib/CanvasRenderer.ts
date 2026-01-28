@@ -17,6 +17,7 @@ import {
   ClusterWithTasks,
   TaskWithChildren,
   ClusterType,
+  MindMapTask,
 } from '@/types/mindmap';
 
 export interface CanvasState {
@@ -261,7 +262,7 @@ export class CanvasRenderer {
    * Render Task element
    * Requirements: 1.1, 1.3 - Size 32px, display only icon (no text, no counter)
    */
-  renderTask(task: TaskWithChildren, position: Position): void {
+  renderTask(task: MindMapTask, position: Position): void {
     if (!this.ctx) return;
 
     const size = BUBBLE_SIZES.TASK;
@@ -326,7 +327,7 @@ export class CanvasRenderer {
    * Render tasks in a ring around expanded cluster
    * Requirements: 4.2 - Display tasks as separate bubbles in ring
    */
-  private renderExpandedTasks(cluster: ClusterWithTasks, tasks: TaskWithChildren[]): void {
+  private renderExpandedTasks(cluster: ClusterWithTasks, tasks: MindMapTask[]): void {
     if (tasks.length === 0) return;
 
     const clusterPos = { x: cluster.positionX, y: cluster.positionY };
