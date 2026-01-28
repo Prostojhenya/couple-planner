@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { MindMapCanvas } from '@/components/MindMapCanvas';
 import { ClusterDetailPanel } from '@/components/ClusterDetailPanel';
 import { FloatingNavBar } from '@/components/FloatingNavBar';
@@ -17,20 +16,11 @@ interface Cluster {
 }
 
 export default function DashboardPage() {
-  const router = useRouter();
   const [clusters, setClusters] = useState<Cluster[]>([]);
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check authentication
-    const token = localStorage.getItem('token');
-    if (!token) {
-      router.push('/auth/login');
-      return;
-    }
-
     // Generate initial cluster positions in radial layout
     const generateClusters = () => {
       const centerX = typeof window !== 'undefined' ? window.innerWidth / 2 : 400;
@@ -54,8 +44,8 @@ export default function DashboardPage() {
           position: { x, y },
           count: Math.floor(Math.random() * 20) + 1,
           members: [
-            { id: '1', name: 'Я', role: 'admin' },
-            { id: '2', name: 'Ю', role: 'user' },
+            { id: '1', name: 'You', role: 'admin' },
+            { id: '2', name: 'Partner', role: 'user' },
           ],
           isExpanded: false,
           tasks: Array.from({ length: 5 }, (_, idx) => ({
@@ -66,11 +56,10 @@ export default function DashboardPage() {
       }
 
       setClusters(newClusters);
-      setLoading(false);
     };
 
     generateClusters();
-  }, [router]);
+  }, []);
 
   const handleClusterTap = (clusterId: string) => {
     setClusters(prev =>
@@ -91,7 +80,7 @@ export default function DashboardPage() {
       type: 'task',
       position,
       count: 0,
-      members: [{ id: '1', name: 'Я', role: 'admin' }],
+      members: [{ id: '1', name: 'You', role: 'admin' }],
       isExpanded: false,
       tasks: [],
     };
@@ -107,17 +96,6 @@ export default function DashboardPage() {
   };
 
   const selectedClusterData = clusters.find(c => c.id === selectedCluster);
-
-  if (loading) {
-    return (
-      <div className="h-screen w-screen flex items-center justify-center bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
-          <p className="text-white font-semibold mt-4 text-lg">Загрузка mind-map...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="h-screen w-screen overflow-hidden">
