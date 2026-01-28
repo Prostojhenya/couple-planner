@@ -12,6 +12,15 @@ const nextConfig = {
   experimental: {
     missingSuspenseWithCSRBailout: false,
   },
+  async redirects() {
+    return [
+      {
+        source: '/icon.svg',
+        destination: '/icon-512.png',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
