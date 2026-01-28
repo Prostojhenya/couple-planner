@@ -132,12 +132,10 @@ export function MindMapCanvas({
 
   const isOverHub = (x: number, y: number): boolean => {
     const hubRadius = 64;
-    // Transform screen coordinates to canvas coordinates
-    const canvasX = (x - translateX) / scale;
-    const canvasY = (y - translateY) / scale;
-    const dx = canvasX - hubPosition.x;
-    const dy = canvasY - hubPosition.y;
-    return Math.sqrt(dx * dx + dy * dy) <= hubRadius;
+    // Use screen coordinates directly
+    const dx = x - hubPosition.x * scale - translateX;
+    const dy = y - hubPosition.y * scale - translateY;
+    return Math.sqrt(dx * dx + dy * dy) <= hubRadius * scale;
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -303,26 +301,29 @@ export function MindMapCanvas({
       
       <div
         ref={contentRef}
-        className="absolute inset-0"
+        className="absolute inset-0 pointer-events-none"
         style={{
           transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
           transformOrigin: '0 0',
         }}
       >
         {/* Hub Node */}
-        <HubNode
-          position={hubPosition}
-          clusterCount={clusters.length}
-        />
+        <div className="pointer-events-auto">
+          <HubNode
+            position={hubPosition}
+            clusterCount={clusters.length}
+          />
+        </div>
 
         {/* Cluster Nodes */}
         {clusters.map(cluster => (
-          <ClusterNode
-            key={cluster.id}
-            cluster={cluster}
-            onTap={() => onClusterTap(cluster.id)}
-            onLongPress={() => onClusterLongPress(cluster.id)}
-          />
+          <div key={cluster.id} className="pointer-events-auto">
+            <ClusterNode
+              cluster={cluster}
+              onTap={() => onClusterTap(cluster.id)}
+              onLongPress={() => onClusterLongPress(cluster.id)}
+            />
+          </div>
         ))}
 
         {/* Preview of new cluster */}

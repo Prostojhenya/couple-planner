@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { MindMapCanvas } from '@/components/MindMapCanvas';
+import { CreateClusterDialog } from '@/components/CreateClusterDialog';
 import { ClusterDetailPanel } from '@/components/ClusterDetailPanel';
 import { FloatingNavBar } from '@/components/FloatingNavBar';
 
@@ -13,12 +14,17 @@ interface Cluster {
   members: Array<{ id: string; name: string; role: string; avatar?: string }>;
   isExpanded: boolean;
   tasks?: Array<{ id: string; status: string }>;
+  name?: string;
+  size?: number;
+  color?: string;
 }
 
 export default function DashboardPage() {
   const [clusters, setClusters] = useState<Cluster[]>([]);
   const [selectedCluster, setSelectedCluster] = useState<string | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [pendingClusterPosition, setPendingClusterPosition] = useState<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     // Generate initial cluster positions in radial layout
@@ -75,16 +81,27 @@ export default function DashboardPage() {
   };
 
   const handleCreateCluster = (position: { x: number; y: number }) => {
+    setPendingClusterPosition(position);
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleClusterCreated = (data: { name: string; size: number; color: string }) => {
+    if (!pendingClusterPosition) return;
+
     const newCluster: Cluster = {
       id: `cluster-${Date.now()}`,
       type: 'task',
-      position,
+      position: pendingClusterPosition,
       count: 0,
       members: [{ id: '1', name: 'You', role: 'admin' }],
       isExpanded: false,
       tasks: [],
+      name: data.name,
+      size: data.size,
+      color: data.color,
     };
     setClusters(prev => [...prev, newCluster]);
+    setPendingClusterPosition(null);
   };
 
   const handleInvite = () => {
@@ -104,6 +121,15 @@ export default function DashboardPage() {
         onClusterTap={handleClusterTap}
         onClusterLongPress={handleClusterLongPress}
         onCreateCluster={handleCreateCluster}
+      />
+
+      <CreateClusterDialog
+        isOpen={isCreateDialogOpen}
+        onClose={() => {
+          setIsCreateDialogOpen(false);
+          setPendingClusterPosition(null);
+        }}
+        onCreate={handleClusterCreated}
       />
 
       <ClusterDetailPanel
